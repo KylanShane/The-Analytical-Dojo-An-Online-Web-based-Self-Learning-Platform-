@@ -65,7 +65,6 @@ CREATE TABLE course_materials (
     description    NVARCHAR(MAX) NULL,
     material_type  NVARCHAR(10)  NOT NULL,
     file_url       NVARCHAR(500) NOT NULL,
-    material_image NVARCHAR(255) NULL,
     uploaded_by    INT           NOT NULL,
     uploaded_at    DATETIME2     NOT NULL DEFAULT SYSDATETIME(),
 
