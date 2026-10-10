@@ -484,3 +484,6 @@ $RECYCLE.BIN/
 *.mdf
 *.ldf
 
+
+App_Data/*.mdf
+App_Data/*.ldf
