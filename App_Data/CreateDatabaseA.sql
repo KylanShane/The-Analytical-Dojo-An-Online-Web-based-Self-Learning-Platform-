@@ -177,6 +177,17 @@ CREATE TABLE forum_posts (
         FOREIGN KEY (course_id) REFERENCES courses(course_id)
 );
 
+-- Per-student forum notification state. A new post from another learner is
+-- unread until the student opens that course's forum.
+CREATE TABLE forum_notification_reads (
+    user_id      INT       NOT NULL,
+    course_id    INT       NOT NULL,
+    last_seen_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+    CONSTRAINT PK_forum_notification_reads PRIMARY KEY (user_id, course_id),
+    CONSTRAINT FK_forum_read_user FOREIGN KEY (user_id) REFERENCES users(user_id),
+    CONSTRAINT FK_forum_read_course FOREIGN KEY (course_id) REFERENCES courses(course_id)
+);
+
 -- ---------- 11. peer_call_requests ----------
 CREATE TABLE peer_call_requests (
     request_id                  INT IDENTITY(1,1) PRIMARY KEY,
