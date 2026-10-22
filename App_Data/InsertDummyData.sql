@@ -15,19 +15,21 @@ BEGIN TRY
     BEGIN TRANSACTION;
     IF EXISTS (
         SELECT 1 FROM sys.identity_columns
-        WHERE object_id IN (OBJECT_ID('users'), OBJECT_ID('courses'), OBJECT_ID('course_chapters'), OBJECT_ID('course_materials'), OBJECT_ID('course_enrollments'), OBJECT_ID('student_material_progress'), OBJECT_ID('certificates'), OBJECT_ID('badges'), OBJECT_ID('student_badges'), OBJECT_ID('forum_posts'), OBJECT_ID('peer_call_requests'), OBJECT_ID('quizzes'), OBJECT_ID('quiz_questions'), OBJECT_ID('question_answer'), OBJECT_ID('quiz_attempts'), OBJECT_ID('question_submitted'))
+        WHERE object_id IN (OBJECT_ID('users'), OBJECT_ID('courses'), OBJECT_ID('course_chapters'), OBJECT_ID('course_materials'), OBJECT_ID('material_slides'), OBJECT_ID('course_enrollments'), OBJECT_ID('student_material_progress'), OBJECT_ID('certificates'), OBJECT_ID('badges'), OBJECT_ID('student_badges'), OBJECT_ID('forum_posts'), OBJECT_ID('forum_replies'), OBJECT_ID('peer_call_requests'), OBJECT_ID('quizzes'), OBJECT_ID('quiz_questions'), OBJECT_ID('question_answer'), OBJECT_ID('quiz_attempts'), OBJECT_ID('question_submitted'))
           AND last_value IS NOT NULL
     ) THROW 51001, 'Automatic IDs must start at 1. Use newly created tables with unused identity counters.', 1;
     IF EXISTS (SELECT 1 FROM users) THROW 51000, 'Seed requires empty users table.', 1;
     IF EXISTS (SELECT 1 FROM courses) THROW 51000, 'Seed requires empty courses table.', 1;
     IF EXISTS (SELECT 1 FROM course_chapters) THROW 51000, 'Seed requires empty course_chapters table.', 1;
     IF EXISTS (SELECT 1 FROM course_materials) THROW 51000, 'Seed requires empty course_materials table.', 1;
+    IF EXISTS (SELECT 1 FROM material_slides) THROW 51000, 'Seed requires empty material_slides table.', 1;
     IF EXISTS (SELECT 1 FROM course_enrollments) THROW 51000, 'Seed requires empty course_enrollments table.', 1;
     IF EXISTS (SELECT 1 FROM student_material_progress) THROW 51000, 'Seed requires empty student_material_progress table.', 1;
     IF EXISTS (SELECT 1 FROM certificates) THROW 51000, 'Seed requires empty certificates table.', 1;
     IF EXISTS (SELECT 1 FROM badges) THROW 51000, 'Seed requires empty badges table.', 1;
     IF EXISTS (SELECT 1 FROM student_badges) THROW 51000, 'Seed requires empty student_badges table.', 1;
     IF EXISTS (SELECT 1 FROM forum_posts) THROW 51000, 'Seed requires empty forum_posts table.', 1;
+    IF EXISTS (SELECT 1 FROM forum_replies) THROW 51000, 'Seed requires empty forum_replies table.', 1;
     IF EXISTS (SELECT 1 FROM peer_call_requests) THROW 51000, 'Seed requires empty peer_call_requests table.', 1;
     IF EXISTS (SELECT 1 FROM quizzes) THROW 51000, 'Seed requires empty quizzes table.', 1;
     IF EXISTS (SELECT 1 FROM quiz_questions) THROW 51000, 'Seed requires empty quiz_questions table.', 1;
@@ -60,14 +62,14 @@ INSERT INTO users (username, full_name, email, password_hash, [role], peer_leade
 
 -- ---------- courses: 8 rows (IDs 1-8) ----------
 INSERT INTO courses (course_title, description, course_image, course_level, [status], created_by, created_at) VALUES
-('Data Analytics Foundations', 'Learn practical data analytics foundations through analytics examples and exercises.', NULL, 'basic', 'PUBLISHED', 1, '2026-01-10'),
-('Excel for Data Analysis', 'Learn practical excel for data analysis through analytics examples and exercises.', NULL, 'basic', 'PUBLISHED', 1, '2026-01-10'),
-('SQL for Data Analysis', 'Learn practical sql for data analysis through analytics examples and exercises.', NULL, 'basic', 'PUBLISHED', 1, '2026-01-10'),
-('Statistics for Analysts', 'Learn practical statistics for analysts through analytics examples and exercises.', NULL, 'basic', 'PUBLISHED', 1, '2026-01-10'),
-('Python and pandas for Analytics', 'Learn practical python and pandas for analytics through analytics examples and exercises.', NULL, 'intermediate', 'PUBLISHED', 1, '2026-01-10'),
-('Power BI and Data Visualization', 'Learn practical power bi and data visualization through analytics examples and exercises.', NULL, 'intermediate', 'PUBLISHED', 1, '2026-01-10'),
-('Machine Learning for Data Analytics', 'Learn practical machine learning for data analytics through analytics examples and exercises.', NULL, 'advanced', 'PUBLISHED', 1, '2026-01-10'),
-('Time Series Analytics', 'Learn practical time series analytics through analytics examples and exercises.', NULL, 'advanced', 'PUBLISHED', 1, '2026-01-10');
+('Data Analytics Foundations', 'Learn practical data analytics foundations through analytics examples and exercises.', 'Content/course-images/data-analytics-foundations.jpg', 'basic', 'PUBLISHED', 1, '2026-01-10'),
+('Excel for Data Analysis', 'Learn practical excel for data analysis through analytics examples and exercises.', 'Content/course-images/excel-data-analysis.jpg', 'basic', 'PUBLISHED', 1, '2026-01-10'),
+('SQL for Data Analysis', 'Learn practical sql for data analysis through analytics examples and exercises.', 'Content/course-images/sql-data-analysis.jpg', 'basic', 'PUBLISHED', 1, '2026-01-10'),
+('Statistics for Analysts', 'Learn practical statistics for analysts through analytics examples and exercises.', 'Content/course-images/statistics-analysts.jpg', 'basic', 'PUBLISHED', 1, '2026-01-10'),
+('Python and pandas for Analytics', 'Learn practical python and pandas for analytics through analytics examples and exercises.', 'Content/course-images/python-pandas.jpg', 'intermediate', 'PUBLISHED', 1, '2026-01-10'),
+('Power BI and Data Visualization', 'Learn practical power bi and data visualization through analytics examples and exercises.', 'Content/course-images/power-bi.jpg', 'intermediate', 'PUBLISHED', 1, '2026-01-10'),
+('Machine Learning for Data Analytics', 'Learn practical machine learning for data analytics through analytics examples and exercises.', 'Content/course-images/machine-learning.jpg', 'advanced', 'PUBLISHED', 1, '2026-01-10'),
+('Time Series Analytics', 'Learn practical time series analytics through analytics examples and exercises.', 'Content/course-images/time-series.jpg', 'advanced', 'PUBLISHED', 1, '2026-01-10');
 
 -- ---------- course_chapters: 24 rows (IDs 1-24) ----------
 INSERT INTO course_chapters (course_id, chapter_title, description, chapter_order) VALUES
@@ -98,54 +100,69 @@ INSERT INTO course_chapters (course_id, chapter_title, description, chapter_orde
 
 -- ---------- course_materials: 48 rows (IDs 1-48) ----------
 INSERT INTO course_materials (chapter_id, material_title, description, material_type, file_url, uploaded_by, uploaded_at) VALUES
-(1, 'Analytics Workflow - Slides', 'Analytics lesson on analytics workflow.', 'PPT', '/demo-materials/chapter-01/slides.pptx', 1, '2026-01-12'),
-(1, 'Analytics Workflow - Walkthrough', 'Analytics lesson on analytics workflow.', 'VIDEO', '/demo-materials/chapter-01/walkthrough.mp4', 1, '2026-01-12'),
-(2, 'Data Types - Slides', 'Analytics lesson on data types.', 'PPT', '/demo-materials/chapter-02/slides.pptx', 1, '2026-01-12'),
-(2, 'Data Types - Walkthrough', 'Analytics lesson on data types.', 'VIDEO', '/demo-materials/chapter-02/walkthrough.mp4', 1, '2026-01-12'),
-(3, 'Data Quality - Slides', 'Analytics lesson on data quality.', 'PPT', '/demo-materials/chapter-03/slides.pptx', 1, '2026-01-12'),
-(3, 'Data Quality - Walkthrough', 'Analytics lesson on data quality.', 'VIDEO', '/demo-materials/chapter-03/walkthrough.mp4', 1, '2026-01-12'),
-(4, 'Spreadsheet Formulas - Slides', 'Analytics lesson on spreadsheet formulas.', 'PPT', '/demo-materials/chapter-04/slides.pptx', 1, '2026-01-12'),
-(4, 'Spreadsheet Formulas - Walkthrough', 'Analytics lesson on spreadsheet formulas.', 'VIDEO', '/demo-materials/chapter-04/walkthrough.mp4', 1, '2026-01-12'),
-(5, 'Cleaning Spreadsheet Data - Slides', 'Analytics lesson on cleaning spreadsheet data.', 'PPT', '/demo-materials/chapter-05/slides.pptx', 1, '2026-01-12'),
-(5, 'Cleaning Spreadsheet Data - Walkthrough', 'Analytics lesson on cleaning spreadsheet data.', 'VIDEO', '/demo-materials/chapter-05/walkthrough.mp4', 1, '2026-01-12'),
-(6, 'Pivot Tables - Slides', 'Analytics lesson on pivot tables.', 'PPT', '/demo-materials/chapter-06/slides.pptx', 1, '2026-01-12'),
-(6, 'Pivot Tables - Walkthrough', 'Analytics lesson on pivot tables.', 'VIDEO', '/demo-materials/chapter-06/walkthrough.mp4', 1, '2026-01-12'),
-(7, 'Selecting and Filtering - Slides', 'Analytics lesson on selecting and filtering.', 'PPT', '/demo-materials/chapter-07/slides.pptx', 1, '2026-01-12'),
-(7, 'Selecting and Filtering - Walkthrough', 'Analytics lesson on selecting and filtering.', 'VIDEO', '/demo-materials/chapter-07/walkthrough.mp4', 1, '2026-01-12'),
-(8, 'Aggregations - Slides', 'Analytics lesson on aggregations.', 'PPT', '/demo-materials/chapter-08/slides.pptx', 1, '2026-01-12'),
-(8, 'Aggregations - Walkthrough', 'Analytics lesson on aggregations.', 'VIDEO', '/demo-materials/chapter-08/walkthrough.mp4', 1, '2026-01-12'),
-(9, 'Joining Tables - Slides', 'Analytics lesson on joining tables.', 'PPT', '/demo-materials/chapter-09/slides.pptx', 1, '2026-01-12'),
-(9, 'Joining Tables - Walkthrough', 'Analytics lesson on joining tables.', 'VIDEO', '/demo-materials/chapter-09/walkthrough.mp4', 1, '2026-01-12'),
-(10, 'Descriptive Statistics - Slides', 'Analytics lesson on descriptive statistics.', 'PPT', '/demo-materials/chapter-10/slides.pptx', 1, '2026-01-12'),
-(10, 'Descriptive Statistics - Walkthrough', 'Analytics lesson on descriptive statistics.', 'VIDEO', '/demo-materials/chapter-10/walkthrough.mp4', 1, '2026-01-12'),
-(11, 'Probability and Sampling - Slides', 'Analytics lesson on probability and sampling.', 'PPT', '/demo-materials/chapter-11/slides.pptx', 1, '2026-01-12'),
-(11, 'Probability and Sampling - Walkthrough', 'Analytics lesson on probability and sampling.', 'VIDEO', '/demo-materials/chapter-11/walkthrough.mp4', 1, '2026-01-12'),
-(12, 'Correlation - Slides', 'Analytics lesson on correlation.', 'PPT', '/demo-materials/chapter-12/slides.pptx', 1, '2026-01-12'),
-(12, 'Correlation - Walkthrough', 'Analytics lesson on correlation.', 'VIDEO', '/demo-materials/chapter-12/walkthrough.mp4', 1, '2026-01-12'),
-(13, 'DataFrames - Slides', 'Analytics lesson on dataframes.', 'PPT', '/demo-materials/chapter-13/slides.pptx', 1, '2026-01-12'),
-(13, 'DataFrames - Walkthrough', 'Analytics lesson on dataframes.', 'VIDEO', '/demo-materials/chapter-13/walkthrough.mp4', 1, '2026-01-12'),
-(14, 'Missing Data - Slides', 'Analytics lesson on missing data.', 'PPT', '/demo-materials/chapter-14/slides.pptx', 1, '2026-01-12'),
-(14, 'Missing Data - Walkthrough', 'Analytics lesson on missing data.', 'VIDEO', '/demo-materials/chapter-14/walkthrough.mp4', 1, '2026-01-12'),
-(15, 'Grouping Data - Slides', 'Analytics lesson on grouping data.', 'PPT', '/demo-materials/chapter-15/slides.pptx', 1, '2026-01-12'),
-(15, 'Grouping Data - Walkthrough', 'Analytics lesson on grouping data.', 'VIDEO', '/demo-materials/chapter-15/walkthrough.mp4', 1, '2026-01-12'),
-(16, 'Power Query - Slides', 'Analytics lesson on power query.', 'PPT', '/demo-materials/chapter-16/slides.pptx', 1, '2026-01-12'),
-(16, 'Power Query - Walkthrough', 'Analytics lesson on power query.', 'VIDEO', '/demo-materials/chapter-16/walkthrough.mp4', 1, '2026-01-12'),
-(17, 'Data Modeling and DAX - Slides', 'Analytics lesson on data modeling and dax.', 'PPT', '/demo-materials/chapter-17/slides.pptx', 1, '2026-01-12'),
-(17, 'Data Modeling and DAX - Walkthrough', 'Analytics lesson on data modeling and dax.', 'VIDEO', '/demo-materials/chapter-17/walkthrough.mp4', 1, '2026-01-12'),
-(18, 'Dashboard Design - Slides', 'Analytics lesson on dashboard design.', 'PPT', '/demo-materials/chapter-18/slides.pptx', 1, '2026-01-12'),
-(18, 'Dashboard Design - Walkthrough', 'Analytics lesson on dashboard design.', 'VIDEO', '/demo-materials/chapter-18/walkthrough.mp4', 1, '2026-01-12'),
-(19, 'Classification - Slides', 'Analytics lesson on classification.', 'PPT', '/demo-materials/chapter-19/slides.pptx', 1, '2026-01-12'),
-(19, 'Classification - Walkthrough', 'Analytics lesson on classification.', 'VIDEO', '/demo-materials/chapter-19/walkthrough.mp4', 1, '2026-01-12'),
-(20, 'Model Evaluation - Slides', 'Analytics lesson on model evaluation.', 'PPT', '/demo-materials/chapter-20/slides.pptx', 1, '2026-01-12'),
-(20, 'Model Evaluation - Walkthrough', 'Analytics lesson on model evaluation.', 'VIDEO', '/demo-materials/chapter-20/walkthrough.mp4', 1, '2026-01-12'),
-(21, 'Data Leakage - Slides', 'Analytics lesson on data leakage.', 'PPT', '/demo-materials/chapter-21/slides.pptx', 1, '2026-01-12'),
-(21, 'Data Leakage - Walkthrough', 'Analytics lesson on data leakage.', 'VIDEO', '/demo-materials/chapter-21/walkthrough.mp4', 1, '2026-01-12'),
-(22, 'Time Series Patterns - Slides', 'Analytics lesson on time series patterns.', 'PPT', '/demo-materials/chapter-22/slides.pptx', 1, '2026-01-12'),
-(22, 'Time Series Patterns - Walkthrough', 'Analytics lesson on time series patterns.', 'VIDEO', '/demo-materials/chapter-22/walkthrough.mp4', 1, '2026-01-12'),
-(23, 'Forecast Validation - Slides', 'Analytics lesson on forecast validation.', 'PPT', '/demo-materials/chapter-23/slides.pptx', 1, '2026-01-12'),
-(23, 'Forecast Validation - Walkthrough', 'Analytics lesson on forecast validation.', 'VIDEO', '/demo-materials/chapter-23/walkthrough.mp4', 1, '2026-01-12'),
-(24, 'Forecast Errors - Slides', 'Analytics lesson on forecast errors.', 'PPT', '/demo-materials/chapter-24/slides.pptx', 1, '2026-01-12'),
-(24, 'Forecast Errors - Walkthrough', 'Analytics lesson on forecast errors.', 'VIDEO', '/demo-materials/chapter-24/walkthrough.mp4', 1, '2026-01-12');
+(1, 'Analytics Workflow - Slides', 'Analytics lesson on analytics workflow.', 'PPT', 'Content/slides/material-001/slide-01.jpg', 1, '2026-01-12'),
+(1, 'Analytics Workflow - Walkthrough', 'Analytics lesson on analytics workflow.', 'VIDEO', 'https://www.youtube.com/watch?v=kWZEXXd2tZA', 1, '2026-01-12'),
+(2, 'Data Types - Slides', 'Analytics lesson on data types.', 'PPT', 'Content/slides/material-003/slide-01.jpg', 1, '2026-01-12'),
+(2, 'Data Types - Walkthrough', 'Analytics lesson on data types.', 'VIDEO', 'https://www.youtube.com/watch?v=kWZEXXd2tZA', 1, '2026-01-12'),
+(3, 'Data Quality - Slides', 'Analytics lesson on data quality.', 'PPT', 'Content/slides/material-005/slide-01.jpg', 1, '2026-01-12'),
+(3, 'Data Quality - Walkthrough', 'Analytics lesson on data quality.', 'VIDEO', 'https://www.youtube.com/watch?v=kWZEXXd2tZA', 1, '2026-01-12'),
+(4, 'Spreadsheet Formulas - Slides', 'Analytics lesson on spreadsheet formulas.', 'PPT', 'Content/slides/material-007/slide-01.jpg', 1, '2026-01-12'),
+(4, 'Spreadsheet Formulas - Walkthrough', 'Analytics lesson on spreadsheet formulas.', 'VIDEO', 'https://www.youtube.com/watch?v=Y8xhrUa3KH4', 1, '2026-01-12'),
+(5, 'Cleaning Spreadsheet Data - Slides', 'Analytics lesson on cleaning spreadsheet data.', 'PPT', 'Content/slides/material-009/slide-01.jpg', 1, '2026-01-12'),
+(5, 'Cleaning Spreadsheet Data - Walkthrough', 'Analytics lesson on cleaning spreadsheet data.', 'VIDEO', 'https://www.youtube.com/watch?v=H6k28jhclwI', 1, '2026-01-12'),
+(6, 'Pivot Tables - Slides', 'Analytics lesson on pivot tables.', 'PPT', 'Content/slides/material-011/slide-01.jpg', 1, '2026-01-12'),
+(6, 'Pivot Tables - Walkthrough', 'Analytics lesson on pivot tables.', 'VIDEO', 'https://www.youtube.com/watch?v=kSNxzoe9RcM', 1, '2026-01-12'),
+(7, 'Selecting and Filtering - Slides', 'Analytics lesson on selecting and filtering.', 'PPT', 'Content/slides/material-013/slide-01.jpg', 1, '2026-01-12'),
+(7, 'Selecting and Filtering - Walkthrough', 'Analytics lesson on selecting and filtering.', 'VIDEO', 'https://www.youtube.com/watch?v=HXV3zeQKqGY', 1, '2026-01-12'),
+(8, 'Aggregations - Slides', 'Analytics lesson on aggregations.', 'PPT', 'Content/slides/material-015/slide-01.jpg', 1, '2026-01-12'),
+(8, 'Aggregations - Walkthrough', 'Analytics lesson on aggregations.', 'VIDEO', 'https://www.youtube.com/watch?v=HXV3zeQKqGY', 1, '2026-01-12'),
+(9, 'Joining Tables - Slides', 'Analytics lesson on joining tables.', 'PPT', 'Content/slides/material-017/slide-01.jpg', 1, '2026-01-12'),
+(9, 'Joining Tables - Walkthrough', 'Analytics lesson on joining tables.', 'VIDEO', 'https://www.youtube.com/watch?v=HXV3zeQKqGY', 1, '2026-01-12'),
+(10, 'Descriptive Statistics - Slides', 'Analytics lesson on descriptive statistics.', 'PPT', 'Content/slides/material-019/slide-01.jpg', 1, '2026-01-12'),
+(10, 'Descriptive Statistics - Walkthrough', 'Analytics lesson on descriptive statistics.', 'VIDEO', 'https://www.youtube.com/watch?v=xxpc-HPKN28', 1, '2026-01-12'),
+(11, 'Probability and Sampling - Slides', 'Analytics lesson on probability and sampling.', 'PPT', 'Content/slides/material-021/slide-01.jpg', 1, '2026-01-12'),
+(11, 'Probability and Sampling - Walkthrough', 'Analytics lesson on probability and sampling.', 'VIDEO', 'https://www.youtube.com/watch?v=xxpc-HPKN28', 1, '2026-01-12'),
+(12, 'Correlation - Slides', 'Analytics lesson on correlation.', 'PPT', 'Content/slides/material-023/slide-01.jpg', 1, '2026-01-12'),
+(12, 'Correlation - Walkthrough', 'Analytics lesson on correlation.', 'VIDEO', 'https://www.youtube.com/watch?v=xxpc-HPKN28', 1, '2026-01-12'),
+(13, 'DataFrames - Slides', 'Analytics lesson on dataframes.', 'PPT', 'Content/slides/material-025/slide-01.jpg', 1, '2026-01-12'),
+(13, 'DataFrames - Walkthrough', 'Analytics lesson on dataframes.', 'VIDEO', 'https://www.youtube.com/watch?v=zmdjNSmRXF4', 1, '2026-01-12'),
+(14, 'Missing Data - Slides', 'Analytics lesson on missing data.', 'PPT', 'Content/slides/material-027/slide-01.jpg', 1, '2026-01-12'),
+(14, 'Missing Data - Walkthrough', 'Analytics lesson on missing data.', 'VIDEO', 'https://www.youtube.com/watch?v=KdmPHEnPJPs', 1, '2026-01-12'),
+(15, 'Grouping Data - Slides', 'Analytics lesson on grouping data.', 'PPT', 'Content/slides/material-029/slide-01.jpg', 1, '2026-01-12'),
+(15, 'Grouping Data - Walkthrough', 'Analytics lesson on grouping data.', 'VIDEO', 'https://www.youtube.com/watch?v=txMdrV1Ut64', 1, '2026-01-12'),
+(16, 'Power Query - Slides', 'Analytics lesson on power query.', 'PPT', 'Content/slides/material-031/slide-01.jpg', 1, '2026-01-12'),
+(16, 'Power Query - Walkthrough', 'Analytics lesson on power query.', 'VIDEO', 'https://www.youtube.com/watch?v=cyWVzAQF9YU', 1, '2026-01-12'),
+(17, 'Data Modeling and DAX - Slides', 'Analytics lesson on data modeling and dax.', 'PPT', 'Content/slides/material-033/slide-01.jpg', 1, '2026-01-12'),
+(17, 'Data Modeling and DAX - Walkthrough', 'Analytics lesson on data modeling and dax.', 'VIDEO', 'https://www.youtube.com/watch?v=cyWVzAQF9YU', 1, '2026-01-12'),
+(18, 'Dashboard Design - Slides', 'Analytics lesson on dashboard design.', 'PPT', 'Content/slides/material-035/slide-01.jpg', 1, '2026-01-12'),
+(18, 'Dashboard Design - Walkthrough', 'Analytics lesson on dashboard design.', 'VIDEO', 'https://www.youtube.com/watch?v=cyWVzAQF9YU', 1, '2026-01-12'),
+(19, 'Classification - Slides', 'Analytics lesson on classification.', 'PPT', 'Content/slides/material-037/slide-01.jpg', 1, '2026-01-12'),
+(19, 'Classification - Walkthrough', 'Analytics lesson on classification.', 'VIDEO', 'https://www.youtube.com/watch?v=i_LwzRVP7bg', 1, '2026-01-12'),
+(20, 'Model Evaluation - Slides', 'Analytics lesson on model evaluation.', 'PPT', 'Content/slides/material-039/slide-01.jpg', 1, '2026-01-12'),
+(20, 'Model Evaluation - Walkthrough', 'Analytics lesson on model evaluation.', 'VIDEO', 'https://www.youtube.com/watch?v=i_LwzRVP7bg', 1, '2026-01-12'),
+(21, 'Data Leakage - Slides', 'Analytics lesson on data leakage.', 'PPT', 'Content/slides/material-041/slide-01.jpg', 1, '2026-01-12'),
+(21, 'Data Leakage - Walkthrough', 'Analytics lesson on data leakage.', 'VIDEO', 'https://www.youtube.com/watch?v=i_LwzRVP7bg', 1, '2026-01-12'),
+(22, 'Time Series Patterns - Slides', 'Analytics lesson on time series patterns.', 'PPT', 'Content/slides/material-043/slide-01.jpg', 1, '2026-01-12'),
+(22, 'Time Series Patterns - Walkthrough', 'Analytics lesson on time series patterns.', 'VIDEO', 'https://www.youtube.com/watch?v=fxx_E0ojKrc', 1, '2026-01-12'),
+(23, 'Forecast Validation - Slides', 'Analytics lesson on forecast validation.', 'PPT', 'Content/slides/material-045/slide-01.jpg', 1, '2026-01-12'),
+(23, 'Forecast Validation - Walkthrough', 'Analytics lesson on forecast validation.', 'VIDEO', 'https://www.youtube.com/watch?v=fxx_E0ojKrc', 1, '2026-01-12'),
+(24, 'Forecast Errors - Slides', 'Analytics lesson on forecast errors.', 'PPT', 'Content/slides/material-047/slide-01.jpg', 1, '2026-01-12'),
+(24, 'Forecast Errors - Walkthrough', 'Analytics lesson on forecast errors.', 'VIDEO', 'https://www.youtube.com/watch?v=fxx_E0ojKrc', 1, '2026-01-12');
+
+-- ---------- material_slides: 144 rows (6 images per PPT material) ----------
+INSERT INTO material_slides
+    (material_id, slide_order, image_url, alt_text)
+SELECT
+    m.material_id,
+    pages.slide_order,
+    N'Content/slides/material-' +
+        RIGHT(N'000' + CONVERT(nvarchar(10), m.material_id), 3) +
+        N'/slide-' + RIGHT(N'00' + CONVERT(nvarchar(10), pages.slide_order), 2) +
+        N'.jpg',
+    m.material_title + N' - slide ' + CONVERT(nvarchar(10), pages.slide_order)
+FROM course_materials m
+CROSS JOIN (VALUES (1), (2), (3), (4), (5), (6)) pages(slide_order)
+WHERE m.material_type = 'PPT';
 
 -- ---------- course_enrollments: 59 rows (IDs 1-59) ----------
 INSERT INTO course_enrollments (user_id, course_id, enrolled_at, completion_percentage, average_score_percentage, completed_at) VALUES
@@ -543,56 +560,15 @@ INSERT INTO certificates (enrollment_id, certificate_number) VALUES
 (58, 'AD-2026-00058'),
 (59, 'AD-2026-00059');
 
--- ---------- badges: 3 rows (IDs 1-3) ----------
+-- ---------- badges: 4 current website badges (IDs 1-4) ----------
 INSERT INTO badges (badges_name, description, distinction_count, icon) VALUES
-('Distinction', 'Final objective score >= 80%.', 0, NULL),
-('Merit', 'Final objective score >= 65% and < 80%.', 0, NULL),
-('Pass', 'Final objective score >= 50% and < 65%.', 0, NULL);
+(N'Join Master', N'Earn Distinction (80%+) in 3 courses.', 3, N'link'),
+(N'Chart Maker', N'Earn Distinction (80%+) in 8 courses.', 8, N'chart'),
+(N'Clean Sweep', N'Earn Distinction (80%+) in 12 courses.', 12, N'broom'),
+(N'Perfect Score', N'Earn Distinction (80%+) in 16 courses.', 16, N'target');
 
--- ---------- student_badges: 42 rows (IDs 1-42) ----------
-INSERT INTO student_badges (enrollment_id, badge_id, earned_at) VALUES
-(1, 1, '2026-03-20T12:00:00'),
-(2, 1, '2026-03-20T12:00:00'),
-(3, 1, '2026-03-20T12:00:00'),
-(4, 1, '2026-03-20T12:00:00'),
-(5, 1, '2026-03-20T12:00:00'),
-(6, 1, '2026-03-20T12:00:00'),
-(7, 1, '2026-03-20T12:00:00'),
-(8, 1, '2026-03-20T12:00:00'),
-(9, 3, '2026-03-20T12:00:00'),
-(11, 2, '2026-03-20T12:00:00'),
-(12, 3, '2026-03-20T12:00:00'),
-(14, 2, '2026-03-20T12:00:00'),
-(15, 3, '2026-03-20T12:00:00'),
-(17, 2, '2026-03-20T12:00:00'),
-(18, 3, '2026-03-20T12:00:00'),
-(20, 3, '2026-03-20T12:00:00'),
-(22, 2, '2026-03-20T12:00:00'),
-(23, 3, '2026-03-20T12:00:00'),
-(25, 2, '2026-03-20T12:00:00'),
-(26, 3, '2026-03-20T12:00:00'),
-(28, 2, '2026-03-20T12:00:00'),
-(29, 3, '2026-03-20T12:00:00'),
-(31, 2, '2026-03-20T12:00:00'),
-(33, 2, '2026-03-20T12:00:00'),
-(34, 3, '2026-03-20T12:00:00'),
-(36, 2, '2026-03-20T12:00:00'),
-(37, 3, '2026-03-20T12:00:00'),
-(39, 2, '2026-03-20T12:00:00'),
-(40, 3, '2026-03-20T12:00:00'),
-(42, 2, '2026-03-20T12:00:00'),
-(43, 3, '2026-03-20T12:00:00'),
-(44, 2, '2026-03-20T12:00:00'),
-(45, 3, '2026-03-20T12:00:00'),
-(47, 2, '2026-03-20T12:00:00'),
-(48, 3, '2026-03-20T12:00:00'),
-(50, 2, '2026-03-20T12:00:00'),
-(51, 3, '2026-03-20T12:00:00'),
-(53, 2, '2026-03-20T12:00:00'),
-(54, 3, '2026-03-20T12:00:00'),
-(56, 3, '2026-03-20T12:00:00'),
-(58, 2, '2026-03-20T12:00:00'),
-(59, 3, '2026-03-20T12:00:00');
+-- student_badges starts empty. The application awards these four badges when
+-- a learner reaches the required number of Distinction-level courses.
 
 -- ---------- forum_posts: 48 rows (IDs 1-48), course discussion feeds ----------
 INSERT INTO forum_posts (user_id, course_id, content, created_at, is_deleted) VALUES
@@ -644,6 +620,40 @@ INSERT INTO forum_posts (user_id, course_id, content, created_at, is_deleted) VA
 (11, 8, 'Usually use a chronological split or rolling evaluation. Training data should precede the observations being predicted.', '2026-04-09T12:00:00', 0),
 (7, 8, 'My MAE is 120 units. How should I explain that to the sales team?', '2026-04-09T13:00:00', 0),
 (11, 8, 'It means the average absolute forecast error is 120 units over the evaluated observations. Compare it with a simple baseline and the typical sales volume.', '2026-04-09T14:00:00', 0);
+
+-- ---------- forum_replies: 24 direct + 8 nested replies ----------
+-- Move each supplied answer into the reply table for its preceding topic.
+INSERT INTO forum_replies
+    (post_id, user_id, parent_reply_id, content, created_at, is_deleted)
+SELECT
+    topic.post_id,
+    answer.user_id,
+    NULL,
+    answer.content,
+    answer.created_at,
+    answer.is_deleted
+FROM forum_posts answer
+INNER JOIN forum_posts topic
+    ON topic.post_id = answer.post_id - 1
+    AND topic.course_id = answer.course_id
+WHERE answer.post_id % 2 = 0
+ORDER BY answer.post_id;
+
+-- Keep only the odd-numbered main discussions in forum_posts.
+DELETE FROM forum_posts WHERE post_id % 2 = 0;
+
+-- Replies to replies: one nested example for each course.
+INSERT INTO forum_replies
+    (post_id, user_id, parent_reply_id, content, created_at, is_deleted)
+VALUES
+    (1,  3, 1,  N'I agree. Also write down the expected decision or output before cleaning.', '2026-04-02T10:30:00', 0),
+    (7,  3, 4,  N'VALUE or Text to Columns can help; verify conversion errors before refreshing.', '2026-04-03T10:30:00', 0),
+    (13, 3, 7,  N'A useful logical order is WHERE, GROUP BY, HAVING, SELECT, then ORDER BY.', '2026-04-04T10:30:00', 0),
+    (19, 3, 10, N'Include a distribution or box plot so readers can see why the mean moved.', '2026-04-05T10:30:00', 0),
+    (25, 3, 13, N'Use errors=''coerce'' carefully and inspect rows that become missing dates.', '2026-04-06T10:30:00', 0),
+    (31, 3, 16, N'Also confirm the relationship direction matches the intended filter flow.', '2026-04-07T10:30:00', 0),
+    (37, 3, 19, N'Compare against a baseline and choose metrics based on the business cost.', '2026-04-08T10:30:00', 0),
+    (43, 3, 22, N'Plot several years together to confirm that the December pattern repeats.', '2026-04-09T10:30:00', 0);
 
 -- ---------- peer_call_requests: 16 rows (IDs 1-16) ----------
 INSERT INTO peer_call_requests (user_id, assigned_peer_leader_id, student_request_description, requested_datetime, [status], meeting_url, rejection_reason) VALUES
@@ -2457,6 +2467,78 @@ INSERT INTO question_submitted (attempt_id, question_id, selected_obj, answer_su
 (245, 53, 144, NULL, 0),
 (246, 42, NULL, 'I would apply selecting and filtering to a sales dataset and document the results.', NULL);
 
+    -- ---------- final enrollment-progress recalculation ----------
+    -- Subjective quizzes count as complete after one submitted attempt.
+    ;WITH progress AS (
+        SELECT
+            e.enrollment_id,
+            totals.materials_total,
+            totals.materials_done,
+            totals.quizzes_total,
+            totals.quizzes_done,
+            CAST(CASE
+                WHEN totals.materials_total + totals.quizzes_total = 0 THEN 0
+                ELSE 100.0 *
+                    (totals.materials_done + totals.quizzes_done) /
+                    (totals.materials_total + totals.quizzes_total)
+            END AS decimal(5,2)) AS completion_percentage
+        FROM course_enrollments e
+        CROSS APPLY (
+            SELECT
+                (SELECT COUNT(*) FROM course_materials m
+                 JOIN course_chapters ch ON ch.chapter_id = m.chapter_id
+                 WHERE ch.course_id = e.course_id) AS materials_total,
+                (SELECT COUNT(*) FROM student_material_progress smp
+                 JOIN course_materials m ON m.material_id = smp.material_id
+                 JOIN course_chapters ch ON ch.chapter_id = m.chapter_id
+                 WHERE smp.enrollment_id = e.enrollment_id
+                   AND smp.completed_at IS NOT NULL
+                   AND ch.course_id = e.course_id) AS materials_done,
+                (SELECT COUNT(*) FROM quizzes q
+                 JOIN course_chapters ch ON ch.chapter_id = q.chapter_id
+                 WHERE ch.course_id = e.course_id
+                   AND EXISTS (SELECT 1 FROM quiz_questions qq WHERE qq.quiz_id = q.quiz_id)) AS quizzes_total,
+                (SELECT COUNT(*) FROM quizzes q
+                 JOIN course_chapters ch ON ch.chapter_id = q.chapter_id
+                 CROSS APPLY (
+                     SELECT TOP 1 qa.score_earned
+                     FROM quiz_attempts qa
+                     WHERE qa.quiz_id = q.quiz_id
+                       AND qa.user_id = e.user_id
+                       AND qa.submitted_at IS NOT NULL
+                     ORDER BY qa.submitted_at DESC, qa.attempt_id DESC
+                 ) latest
+                 CROSS APPLY (
+                     SELECT COUNT(*) AS question_total,
+                            SUM(CASE WHEN qq.question_type IN ('MCQ', 'TRUE_FALSE') THEN 1 ELSE 0 END) AS objective_total
+                     FROM quiz_questions qq
+                     WHERE qq.quiz_id = q.quiz_id
+                 ) questions
+                 WHERE ch.course_id = e.course_id
+                   AND questions.question_total > 0
+                   AND (questions.objective_total = 0
+                        OR 100.0 * latest.score_earned / questions.objective_total >= 50)) AS quizzes_done
+        ) totals
+    )
+    UPDATE enrollment
+    SET completion_percentage = progress.completion_percentage,
+        completed_at = CASE
+            WHEN progress.completion_percentage = 100
+            THEN COALESCE(enrollment.completed_at, SYSDATETIME())
+            ELSE NULL
+        END
+    FROM course_enrollments enrollment
+    JOIN progress ON progress.enrollment_id = enrollment.enrollment_id;
+
+    INSERT INTO certificates (enrollment_id, certificate_number)
+    SELECT e.enrollment_id, 'AD-' + CONVERT(varchar(36), NEWID())
+    FROM course_enrollments e
+    WHERE e.completion_percentage = 100
+      AND NOT EXISTS (
+          SELECT 1 FROM certificates c
+          WHERE c.enrollment_id = e.enrollment_id
+      );
+
     COMMIT TRANSACTION;
 END TRY
 BEGIN CATCH
@@ -2473,6 +2555,8 @@ SELECT 'course_chapters' AS table_name, COUNT(*) AS row_count FROM course_chapte
 UNION ALL
 SELECT 'course_materials' AS table_name, COUNT(*) AS row_count FROM course_materials
 UNION ALL
+SELECT 'material_slides' AS table_name, COUNT(*) AS row_count FROM material_slides
+UNION ALL
 SELECT 'course_enrollments' AS table_name, COUNT(*) AS row_count FROM course_enrollments
 UNION ALL
 SELECT 'material_progress' AS table_name, COUNT(*) AS row_count FROM student_material_progress
@@ -2484,6 +2568,8 @@ UNION ALL
 SELECT 'badges' AS table_name, COUNT(*) AS row_count FROM student_badges
 UNION ALL
 SELECT 'forum_posts' AS table_name, COUNT(*) AS row_count FROM forum_posts
+UNION ALL
+SELECT 'forum_replies' AS table_name, COUNT(*) AS row_count FROM forum_replies
 UNION ALL
 SELECT 'call_requests' AS table_name, COUNT(*) AS row_count FROM peer_call_requests
 UNION ALL
