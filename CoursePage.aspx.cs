@@ -85,7 +85,7 @@ namespace The_Analytical_Dojo
                     );
                 }
 
-                MarkMaterialComplete(courseId, materialId);
+                DojoMaterials.Complete(UserId, courseId, materialId);
 
                 // Reload the page to show the updated progress.
                 Response.Redirect(
@@ -315,16 +315,56 @@ namespace The_Analytical_Dojo
                     material["material_type"]
                 );
 
-                string materialUrl = GetSafeMaterialUrl(
+                string materialUrl = DojoMaterials.SafeUrl(
                     Convert.ToString(material["file_url"])
                 );
 
-                string embedUrl = GetMaterialEmbedUrl(
+                string embedUrl = DojoMaterials.EmbedUrl(
                     materialType,
                     materialUrl
                 );
 
+                string viewUrl =
+                    "MaterialView.aspx?id=" + H(material["material_id"]);
+
                 html.Append("<div class='lesson'>");
+
+                // Preview tile that opens the full-size viewer.
+                if (enrolled && embedUrl != null)
+                {
+                    string thumbnail = DojoMaterials.ThumbnailUrl(
+                        materialType,
+                        materialUrl
+                    );
+                    bool video = DojoMaterials.IsVideo(materialType);
+
+                    html.Append(
+                        "<a class='material-tile" +
+                        (video ? " is-video" : " is-slides") +
+                        "' href='" + viewUrl + "' " +
+                        "aria-label='View " + H(material["material_title"]) + "'>"
+                    );
+
+                    if (thumbnail != null)
+                    {
+                        html.Append(
+                            "<img src='" + H(thumbnail) + "' alt='' loading='lazy' />"
+                        );
+                    }
+                    else
+                    {
+                        html.Append(
+                            "<span class='material-tile-art' aria-hidden='true'>" +
+                            "<i></i><i></i><i></i></span>"
+                        );
+                    }
+
+                    html.Append(
+                        "<span class='material-tile-play' aria-hidden='true'>" +
+                        (video ? "▶" : "⤢") +
+                        "</span></a>"
+                    );
+                }
                 html.Append("<div class='lesson-info'>");
 
                 html.Append("<span class='pill'>");
@@ -341,29 +381,21 @@ namespace The_Analytical_Dojo
 
                 html.Append("</div>");
 
-                if (enrolled && embedUrl != null)
-                {
-                    html.Append("<div class='material-viewer'>");
-                    html.Append(
-                        "<iframe " +
-                        "src='" + H(embedUrl) + "' " +
-                        "title='" + H(material["material_title"]) + "' " +
-                        "loading='lazy' " +
-                        "allow='accelerometer; autoplay; clipboard-write; " +
-                        "encrypted-media; gyroscope; picture-in-picture; " +
-                        "web-share' " +
-                        "allowfullscreen></iframe>"
-                    );
-                    html.Append("</div>");
-                }
-
                 html.Append("<div class='lesson-actions'>");
 
                 if (!enrolled)
                 {
                     html.Append("<span class='muted'>Enrol to view this material</span>");
                 }
-                else if (embedUrl == null)
+                else if (embedUrl != null)
+                {
+                    html.Append(
+                        "<a class='btn ghost' href='" + viewUrl + "'>" +
+                        (DojoMaterials.IsVideo(materialType) ? "▶ Watch" : "⤢ View slides") +
+                        "</a>"
+                    );
+                }
+                else
                 {
                     html.Append(
                         "<span class='muted'>" +
@@ -519,284 +551,6 @@ namespace The_Analytical_Dojo
 
                 html.Append("</div></div>");
             }
-        }
-
-        private void MarkMaterialComplete(
-            int courseId,
-            int materialId
-        )
-        {
-            using (SqlConnection connection = DojoDb.GetConnection())
-            {
-                connection.Open();
-
-                using (
-                    SqlTransaction transaction =
-                        connection.BeginTransaction()
-                )
-                {
-                    int enrollmentId = DojoData.LockEnrollment(
-                        connection,
-                        transaction,
-                        UserId,
-                        courseId
-                    );
-
-                    // Verify that this material belongs to this course.
-                    object result = DojoData.Scalar(
-                        connection,
-                        transaction,
-                        @"
-                        SELECT COUNT(*)
-                        FROM course_materials m
-                        INNER JOIN course_chapters ch
-                            ON ch.chapter_id = m.chapter_id
-                        WHERE m.material_id = @materialId
-                            AND ch.course_id = @courseId",
-                        DojoData.P("@materialId", materialId),
-                        DojoData.P("@courseId", courseId)
-                    );
-
-                    if (Convert.ToInt32(result) != 1)
-                    {
-                        throw new HttpException(
-                            400,
-                            "This material does not belong to the course."
-                        );
-                    }
-
-                    // Insert progress or complete an existing progress row.
-                    // Preserve the original completion date on repeat clicks.
-                    DojoData.Execute(
-                        connection,
-                        transaction,
-                        @"
-                        IF EXISTS
-                        (
-                            SELECT 1
-                            FROM student_material_progress
-                            WHERE enrollment_id = @enrollmentId
-                                AND material_id = @materialId
-                        )
-                        BEGIN
-                            UPDATE student_material_progress
-                            SET completed_at = COALESCE(
-                                completed_at,
-                                SYSDATETIME()
-                            )
-                            WHERE enrollment_id = @enrollmentId
-                                AND material_id = @materialId;
-                        END
-                        ELSE
-                        BEGIN
-                            INSERT INTO student_material_progress
-                            (
-                                enrollment_id,
-                                material_id,
-                                completed_at
-                            )
-                            VALUES
-                            (
-                                @enrollmentId,
-                                @materialId,
-                                SYSDATETIME()
-                            );
-                        END",
-                        DojoData.P("@enrollmentId", enrollmentId),
-                        DojoData.P("@materialId", materialId)
-                    );
-
-                    // Recalculate course progress and achievements.
-                    DojoData.Refresh(
-                        connection,
-                        transaction,
-                        UserId,
-                        courseId,
-                        enrollmentId
-                    );
-
-                    transaction.Commit();
-                }
-            }
-        }
-
-        private string GetSafeMaterialUrl(string url)
-        {
-            if (string.IsNullOrWhiteSpace(url))
-            {
-                return null;
-            }
-
-            url = url.Trim();
-
-            if (
-                url.Contains("\\") ||
-                url.Contains("\r") ||
-                url.Contains("\n") ||
-                url.StartsWith("//")
-            )
-            {
-                return null;
-            }
-
-            // Allow external HTTP and HTTPS material links.
-            Uri absoluteUri;
-
-            if (
-                Uri.TryCreate(
-                    url,
-                    UriKind.Absolute,
-                    out absoluteUri
-                )
-            )
-            {
-                if (
-                    absoluteUri.Scheme == Uri.UriSchemeHttps ||
-                    absoluteUri.Scheme == Uri.UriSchemeHttp
-                )
-                {
-                    return url;
-                }
-
-                return null;
-            }
-
-            if (url.Contains(":"))
-            {
-                return null;
-            }
-
-            // Resolve material paths inside this application.
-            if (url.StartsWith("~/"))
-            {
-                return ResolveUrl(url);
-            }
-
-            return ResolveUrl(
-                "~/" + url.TrimStart('/')
-            );
-        }
-
-        private string GetMaterialEmbedUrl(
-            string materialType,
-            string materialUrl)
-        {
-            if (string.IsNullOrWhiteSpace(materialUrl))
-            {
-                return null;
-            }
-
-            if (
-                string.Equals(
-                    materialType,
-                    "VIDEO",
-                    StringComparison.OrdinalIgnoreCase
-                )
-            )
-            {
-                string videoId = GetYouTubeVideoId(materialUrl);
-
-                if (videoId == null)
-                {
-                    return null;
-                }
-
-                return "https://www.youtube-nocookie.com/embed/" + videoId;
-            }
-
-            if (
-                !string.Equals(
-                    materialType,
-                    "PPT",
-                    StringComparison.OrdinalIgnoreCase
-                )
-            )
-            {
-                return null;
-            }
-
-            Uri absoluteUri;
-
-            if (!Uri.TryCreate(materialUrl, UriKind.Absolute, out absoluteUri))
-            {
-                return materialUrl.EndsWith(
-                    ".pdf",
-                    StringComparison.OrdinalIgnoreCase
-                )
-                    ? materialUrl
-                    : null;
-            }
-
-            string path = absoluteUri.AbsolutePath;
-
-            if (path.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-            {
-                return materialUrl;
-            }
-
-            if (
-                path.EndsWith(".ppt", StringComparison.OrdinalIgnoreCase) ||
-                path.EndsWith(".pptx", StringComparison.OrdinalIgnoreCase)
-            )
-            {
-                return
-                    "https://view.officeapps.live.com/op/embed.aspx?src=" +
-                    HttpUtility.UrlEncode(materialUrl);
-            }
-
-            return null;
-        }
-
-        private string GetYouTubeVideoId(string url)
-        {
-            Uri uri;
-
-            if (!Uri.TryCreate(url, UriKind.Absolute, out uri))
-            {
-                return null;
-            }
-
-            string host = uri.Host.ToLowerInvariant();
-            string videoId = null;
-
-            if (host == "youtu.be" || host == "www.youtu.be")
-            {
-                videoId = uri.AbsolutePath.Trim('/').Split('/')[0];
-            }
-            else if (
-                host == "youtube.com" ||
-                host == "www.youtube.com" ||
-                host == "m.youtube.com"
-            )
-            {
-                if (uri.AbsolutePath == "/watch")
-                {
-                    videoId = HttpUtility.ParseQueryString(uri.Query)["v"];
-                }
-                else if (uri.AbsolutePath.StartsWith("/embed/"))
-                {
-                    videoId = uri.AbsolutePath.Substring(7).Split('/')[0];
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(videoId) || videoId.Length != 11)
-            {
-                return null;
-            }
-
-            foreach (char value in videoId)
-            {
-                if (
-                    !char.IsLetterOrDigit(value) &&
-                    value != '-' &&
-                    value != '_'
-                )
-                {
-                    return null;
-                }
-            }
-
-            return videoId;
         }
     }
 }

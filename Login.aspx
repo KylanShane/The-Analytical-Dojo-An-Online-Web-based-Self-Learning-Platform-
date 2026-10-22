@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
-    <link href="Content/dojo-theme.css?v=20261021b" rel="stylesheet" />
+    <link href="Content/dojo-theme.css?v=20261022" rel="stylesheet" />
     <script src="Scripts/theme.js"></script>
 </head>
 <body class="auth-page">

@@ -210,13 +210,129 @@ namespace The_Analytical_Dojo
 
             html.Append("</div>");
 
-            html.Append("<strong class='score-big'>");
-            html.Append(GetScoreText(attempt));
-            html.Append("</strong>");
+            bool graded =
+                Convert.ToString(attempt["quiz_type"]) != "SUBJ" &&
+                attempt["score"] != DBNull.Value;
+
+            if (graded)
+            {
+                // Ring gauge, filled by Scripts/quiz-result.js
+                html.Append(
+                    "<div class='score-ring' data-score-ring style='--score:" +
+                    DojoData.Num(attempt["score"]) +
+                    "'><svg viewBox='0 0 120 120' aria-hidden='true'>" +
+                    "<circle cx='60' cy='60' r='52'></circle>" +
+                    "<circle class='score-ring-fill' cx='60' cy='60' r='52'></circle></svg>" +
+                    "<strong>" + DojoData.Num(attempt["score"]) + "%</strong>" +
+                    "<small>" + H(DojoData.Band(attempt["score"])) + "</small></div>"
+                );
+            }
+            else
+            {
+                html.Append("<strong class='score-big'>");
+                html.Append(GetScoreText(attempt));
+                html.Append("</strong>");
+            }
 
             html.Append("</section>");
 
+            if (Request.QueryString["fresh"] == "1")
+            {
+                html.Append(ResultCelebration(attempt, graded));
+            }
+
             Summary.Text = html.ToString();
+        }
+
+        // Full-screen result card shown once, straight after submitting.
+        private string ResultCelebration(DataRow attempt, bool graded)
+        {
+            int quizId = Convert.ToInt32(attempt["quiz_id"]);
+            bool canRetry = DojoData.CanAttemptQuiz(UserId, quizId);
+            decimal score = graded ? Convert.ToDecimal(attempt["score"]) : 0m;
+
+            string mood;
+            string icon;
+            string title;
+            string message;
+
+            if (!graded)
+            {
+                mood = "reflect";
+                icon = "✍";
+                title = "Reflection submitted!";
+                message = "Thoughtful answers build real understanding. Compare yours with the model answers below.";
+            }
+            else if (score >= DojoData.DistinctionMark)
+            {
+                mood = "win";
+                icon = "🏆";
+                title = score >= 100 ? "Perfect score!" : "Outstanding!";
+                message = "You crushed it with a Distinction. That is black-belt level analysis.";
+            }
+            else if (score >= DojoData.PassMark)
+            {
+                mood = "pass";
+                icon = "✨";
+                title = "Nice work, you passed!";
+                message = "Solid effort. Review the answers below to push for 80% next time.";
+            }
+            else
+            {
+                mood = "fail";
+                icon = "💪";
+                title = "So close. Try next time!";
+                message = "Every sensei failed before they mastered it. Review the answers, then give it another go.";
+            }
+
+            StringBuilder html = new StringBuilder();
+
+            html.Append(
+                "<div class='result-scrim' data-result data-mood='" + mood + "' role='dialog' aria-modal='true' aria-labelledby='resultTitle'>"
+            );
+            html.Append("<canvas class='result-confetti' data-confetti aria-hidden='true'></canvas>");
+            html.Append("<section class='result-card'>");
+            html.Append("<span class='result-icon' aria-hidden='true'>" + icon + "</span>");
+            html.Append("<span class='result-kicker'>" + H(attempt["quiz"]) + "</span>");
+            html.Append("<h2 id='resultTitle'>" + title + "</h2>");
+
+            if (graded)
+            {
+                html.Append(
+                    "<div class='result-score'><strong data-count-to='" +
+                    DojoData.Num(score) + "'>0</strong><span>%</span></div>"
+                );
+
+                if (attempt["score_earned"] != DBNull.Value)
+                {
+                    html.Append(
+                        "<p class='result-detail'>" +
+                        DojoData.Num(attempt["score_earned"]) + " of " + H(attempt["total"]) +
+                        " correct · " + H(DojoData.Band(score)) + "</p>"
+                    );
+                }
+            }
+
+            html.Append("<p class='result-message'>" + message + "</p>");
+            html.Append("<div class='result-actions'>");
+            html.Append("<button type='button' class='btn' data-result-close>Review answers</button>");
+
+            if (canRetry)
+            {
+                html.Append(
+                    "<a class='btn ghost' href='TakeQuiz.aspx?id=" + quizId + "'>↻ Try again</a>"
+                );
+            }
+            else
+            {
+                html.Append(
+                    "<a class='btn ghost' href='CoursePage.aspx?id=" + H(attempt["course_id"]) + "'>Back to course</a>"
+                );
+            }
+
+            html.Append("</div></section></div>");
+
+            return html.ToString();
         }
 
         private void DisplayAnswers(
@@ -311,7 +427,12 @@ namespace The_Analytical_Dojo
                 html.Append(questionNumber);
                 html.Append("</span>");
 
-                html.Append("<span class='pill'>");
+                html.Append(
+                    "<span class='pill" +
+                    (status == "Correct" ? " pill-correct" : status == "Incorrect" ? " pill-wrong" : "") +
+                    "'>"
+                );
+                html.Append(status == "Correct" ? "✓ " : status == "Incorrect" ? "✕ " : "");
                 html.Append(status);
                 html.Append("</span>");
 

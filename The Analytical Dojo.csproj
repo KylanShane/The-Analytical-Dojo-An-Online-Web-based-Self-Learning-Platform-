@@ -145,6 +145,12 @@
     <Content Include="Content\img\LightModeLogo.jpg" />
     <Content Include="Content\Site.css" />
     <Content Include="CoursePage.aspx" />
+    <Content Include="MaterialContent.ashx" />
+    <Content Include="MaterialView.aspx" />
+    <Content Include="Scripts\quiz.js" />
+    <Content Include="Scripts\quiz-result.js" />
+    <Content Include="Content\img\logo-light.png" />
+    <Content Include="Content\img\logo-dark.png" />
     <Content Include="CourseForum.aspx" />
     <Content Include="Profile.aspx" />
     <Content Include="Default.aspx" />
@@ -199,6 +205,17 @@
   <ItemGroup>
     <Compile Include="App_Code\DojoData.cs" />
     <Compile Include="App_Code\DojoAi.cs" />
+    <Compile Include="App_Code\DojoMaterials.cs" />
+    <Compile Include="MaterialContent.ashx.cs">
+      <DependentUpon>MaterialContent.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="MaterialView.aspx.cs">
+      <DependentUpon>MaterialView.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="MaterialView.aspx.designer.cs">
+      <DependentUpon>MaterialView.aspx</DependentUpon>
+    </Compile>
     <Compile Include="App_Code\DojoPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>

@@ -33,3 +33,7 @@
         runat="server" />
 
 </asp:Content>
+
+<asp:Content ID="PageScripts" ContentPlaceHolderID="Scripts" runat="server">
+    <script src="<%= ResolveUrl("~/Scripts/quiz-result.js") %>?v=20261022"></script>
+</asp:Content>

@@ -6,7 +6,7 @@
  <title>The Analytical Dojo</title>
  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
- <link href="<%= ResolveUrl("~/Content/dojo-theme.css") %>?v=20261021b" rel="stylesheet" />
+ <link href="<%= ResolveUrl("~/Content/dojo-theme.css") %>?v=20261022" rel="stylesheet" />
  <script src="<%= ResolveUrl("~/Scripts/theme.js") %>"></script>
  <asp:ContentPlaceHolder ID="Head" runat="server" />
 </head>
@@ -60,7 +60,7 @@
   </div>
   <script type="application/json" id="dojoCourseIndex"><%= CourseSearchJson %></script>
  </form>
- <script src="<%= ResolveUrl("~/Scripts/dojo.js") %>?v=20261021b"></script>
+ <script src="<%= ResolveUrl("~/Scripts/dojo.js") %>?v=20261022"></script>
  <asp:ContentPlaceHolder ID="Scripts" runat="server" />
 </body>
 </html>

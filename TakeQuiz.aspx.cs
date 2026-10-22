@@ -140,10 +140,16 @@ namespace The_Analytical_Dojo
 
                 Questions.Controls.Add(
                     new LiteralControl(
-                        "<fieldset class='panel question'>" +
-                        "<legend>Question " +
-                        questionNumber +
-                        "</legend>" +
+                        "<fieldset class='panel question quiz-card' data-question data-kind='" +
+                        (subjective ? "subjective" : "objective") +
+                        "'>" +
+                        "<legend><span class='quiz-qnum'>Q" +
+                        questionNumber.ToString("00") +
+                        "</span><span class='quiz-qof'> / " +
+                        questionTable.Rows.Count.ToString("00") +
+                        "</span><span class='quiz-kind'>" +
+                        (subjective ? "Reflection" : "Pick one") +
+                        "</span></legend>" +
                         "<h2>" +
                         H(questionText) +
                         "</h2>"
@@ -558,8 +564,9 @@ namespace The_Analytical_Dojo
 
         private void RedirectToReview(int attemptId)
         {
+            // fresh=1 tells the review page to play the result celebration.
             Response.Redirect(
-                "ReviewQuiz.aspx?attempt=" + attemptId,
+                "ReviewQuiz.aspx?attempt=" + attemptId + "&fresh=1",
                 false
             );
 

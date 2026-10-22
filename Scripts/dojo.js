@@ -22,8 +22,8 @@
  const revealTargets=[...document.querySelectorAll('.dashboard .panel,.dashboard .stat,.dashboard .course-card,.dashboard .course-row,.dashboard .forum-post,.dashboard .learning-hero,.dashboard .course-community-card,.dashboard .chat-rail-card,.dashboard .lesson,.dashboard .achievement')];
  if('IntersectionObserver' in window&&!reduceMotion){const io=new IntersectionObserver(entries=>entries.forEach(entry=>{if(!entry.isIntersecting)return;const el=entry.target;el.classList.add('is-in');el.querySelectorAll('.stat strong').forEach(countUp);if(el.matches('.stat'))el.querySelectorAll('strong').forEach(countUp);el.querySelectorAll('progress,.track span').forEach(fillProgress);io.unobserve(el);setTimeout(()=>el.classList.remove('reveal','is-in'),1100);}),{threshold:.12,rootMargin:'0px 0px -40px 0px'});const groups=new Map();revealTargets.forEach(el=>{const n=groups.get(el.parentNode)||0;groups.set(el.parentNode,n+1);el.style.setProperty('--reveal-delay',Math.min(n,6)*0.06+'s');el.classList.add('reveal');io.observe(el);});}
  const nav=document.querySelector('.navrow'),indicator=nav&&nav.querySelector('.nav-indicator'),navLinks=nav?[...nav.querySelectorAll('a')]:[];
- function placeIndicator(link){if(!link||!indicator)return;indicator.style.width=link.offsetWidth+'px';indicator.style.transform='translateX('+link.offsetLeft+'px)';}
- if(nav){const active=nav.querySelector('[aria-current="page"]')||navLinks[0];requestAnimationFrame(()=>placeIndicator(active));navLinks.forEach(link=>link.addEventListener('mouseenter',()=>placeIndicator(link)));nav.addEventListener('mouseleave',()=>placeIndicator(nav.querySelector('[aria-current="page"]')||active));addEventListener('resize',()=>placeIndicator(nav.querySelector('[aria-current="page"]')||active));}
+ function placeIndicator(link){if(!indicator)return;indicator.style.opacity=link?'1':'0';navLinks.forEach(a=>a.classList.toggle('is-lit',a===link));if(!link)return;indicator.style.width=link.offsetWidth+'px';indicator.style.transform='translateX('+link.offsetLeft+'px)';}
+ if(nav){const active=nav.querySelector('[aria-current="page"]');requestAnimationFrame(()=>placeIndicator(active));if(document.fonts)document.fonts.ready.then(()=>placeIndicator(nav.querySelector('[aria-current="page"]')||active));navLinks.forEach(link=>link.addEventListener('mouseenter',()=>placeIndicator(link)));nav.addEventListener('mouseleave',()=>placeIndicator(nav.querySelector('[aria-current="page"]')||active));addEventListener('resize',()=>placeIndicator(nav.querySelector('[aria-current="page"]')||active));}
  const noticeButton=document.querySelector('[data-notification-toggle]'),noticePanel=document.querySelector('[data-notification-panel]');
  if(noticeButton&&noticePanel){noticeButton.addEventListener('click',event=>{event.stopPropagation();const open=noticePanel.hidden;noticePanel.hidden=!open;noticeButton.setAttribute('aria-expanded',String(open));});noticePanel.addEventListener('click',event=>event.stopPropagation());document.addEventListener('click',()=>{noticePanel.hidden=true;noticeButton.setAttribute('aria-expanded','false');});}
  const searchOpen=document.querySelector('[data-search-open]'),scrim=document.querySelector('[data-search-scrim]'),globalSearch=document.getElementById('globalCourseSearch'),results=document.querySelector('[data-search-results]'),indexNode=document.getElementById('dojoCourseIndex');
@@ -45,6 +45,61 @@
  const chatInput=document.querySelector('[data-chat-input]');if(chatInput){const chatWindow=document.querySelector('[data-chat-window]');if(chatWindow)chatWindow.scrollTop=chatWindow.scrollHeight;document.querySelectorAll('[data-chat-prompt]').forEach(button=>button.addEventListener('click',()=>{chatInput.value=button.dataset.chatPrompt||'';chatInput.focus();}));chatInput.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();const send=document.querySelector('.dojo-chat-send');if(send&&!send.disabled)send.click();}});}
  const examples={average:'SELECT course, ROUND(AVG(score), 1) AS avg_score\nFROM my_quiz_results\nGROUP BY course\nORDER BY avg_score DESC;',all:'SELECT course, quiz, score\nFROM my_quiz_results\nORDER BY score DESC;',filter:'SELECT course, quiz, score\nFROM my_quiz_results\nWHERE score >= 80\nORDER BY score DESC;'};
  const editor=document.querySelector('.sql-editor');if(editor){document.querySelectorAll('[data-example]').forEach(b=>b.addEventListener('click',()=>{editor.value=examples[b.dataset.example];editor.focus();}));document.querySelector('[data-query-reset]').addEventListener('click',()=>{editor.value=examples.average;editor.focus();});}
+ // Material viewer: fullscreen, theatre mode and keyboard shortcuts
+ const stage=document.querySelector('[data-viewer-stage]');
+ if(stage){
+  const layout=document.querySelector('[data-viewer-layout]'),theatreBtn=document.querySelector('[data-viewer-theatre]'),fullBtn=document.querySelector('[data-viewer-fullscreen]');
+  const toggleFull=()=>{if(document.fullscreenElement)document.exitFullscreen();else if(stage.requestFullscreen)stage.requestFullscreen();};
+  const setTheatre=on=>{layout.classList.toggle('is-theatre',on);if(theatreBtn)theatreBtn.setAttribute('aria-pressed',String(on));try{localStorage.setItem('dojo-theatre',on?'1':'0');}catch(e){}};
+  try{if(localStorage.getItem('dojo-theatre')==='1')setTheatre(true);}catch(e){}
+  if(fullBtn)fullBtn.addEventListener('click',toggleFull);
+  if(theatreBtn)theatreBtn.addEventListener('click',()=>setTheatre(!layout.classList.contains('is-theatre')));
+  document.addEventListener('fullscreenchange',()=>{if(fullBtn)fullBtn.textContent=document.fullscreenElement?'⤡ Exit fullscreen':'⤢ Fullscreen';});
+  // PDF slides: render page-by-page with PDF.js so they fill the stage
+  let deck=null;
+  const pdfSrc=stage.dataset.pdf,frame=stage.querySelector('.viewer-frame'),pdfFrame=frame&&frame.querySelector('iframe');
+  if(pdfSrc&&frame){
+   const pdfjsBase='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+   const fallback=()=>{frame.classList.remove('is-loading');if(pdfFrame&&pdfFrame.dataset.src)pdfFrame.src=pdfFrame.dataset.src;};
+   frame.classList.add('is-loading');
+   const lib=document.createElement('script');lib.src=pdfjsBase+'pdf.min.js';lib.onerror=fallback;
+   lib.onload=()=>{window.pdfjsLib.GlobalWorkerOptions.workerSrc=pdfjsBase+'pdf.worker.min.js';window.pdfjsLib.getDocument(pdfSrc).promise.then(doc=>{deck=buildDeck(doc);}).catch(fallback);};
+   document.head.appendChild(lib);
+  }
+  function buildDeck(doc){
+   frame.classList.remove('is-loading');if(pdfFrame)pdfFrame.remove();
+   const wrap=document.createElement('div');wrap.className='slide-deck';
+   const canvas=document.createElement('canvas');wrap.appendChild(canvas);
+   const prevZone=document.createElement('button'),nextZone=document.createElement('button');
+   prevZone.type=nextZone.type='button';prevZone.className='slide-zone is-prev';nextZone.className='slide-zone is-next';prevZone.setAttribute('aria-label','Previous slide');nextZone.setAttribute('aria-label','Next slide');prevZone.textContent='‹';nextZone.textContent='›';
+   frame.append(wrap,prevZone,nextZone);
+   const controls=document.createElement('span');controls.className='slide-controls';
+   controls.innerHTML='<button type="button" class="viewer-tool" data-slide="-1" aria-label="Previous slide">◀</button><span class="slide-count" aria-live="polite"></span><button type="button" class="viewer-tool" data-slide="1" aria-label="Next slide">▶</button><button type="button" class="viewer-tool" data-zoom="-1" aria-label="Zoom out">−</button><button type="button" class="viewer-tool" data-zoom="0" aria-label="Fit to screen">Fit</button><button type="button" class="viewer-tool" data-zoom="1" aria-label="Zoom in">+</button>';
+   const bar=stage.querySelector('.viewer-bar');bar.insertBefore(controls,bar.querySelector('.viewer-bar-actions'));
+   const counter=controls.querySelector('.slide-count');
+   let page=1,zoom=1,task=null;
+   function render(){
+    doc.getPage(page).then(p=>{
+     const base=p.getViewport({scale:1}),fit=Math.min(frame.clientWidth/base.width,frame.clientHeight/base.height)*0.96,scale=fit*zoom,dpr=window.devicePixelRatio||1,vp=p.getViewport({scale:scale*dpr});
+     if(task)task.cancel();
+     canvas.width=vp.width;canvas.height=vp.height;canvas.style.width=vp.width/dpr+'px';canvas.style.height=vp.height/dpr+'px';
+     wrap.classList.toggle('is-zoomed',zoom>1);
+     task=p.render({canvasContext:canvas.getContext('2d'),viewport:vp});task.promise.catch(()=>{});
+     counter.textContent=page+' / '+doc.numPages;
+     prevZone.disabled=page===1;nextZone.disabled=page===doc.numPages;
+    });
+   }
+   function go(step){const target=Math.max(1,Math.min(doc.numPages,page+step));if(target===page)return false;page=target;canvas.classList.remove('slide-in');void canvas.offsetWidth;if(!reduceMotion)canvas.classList.add(step>0?'slide-in':'slide-in-back');render();return true;}
+   prevZone.addEventListener('click',()=>go(-1));nextZone.addEventListener('click',()=>go(1));
+   controls.addEventListener('click',event=>{const b=event.target.closest('button');if(!b)return;if(b.dataset.slide)go(Number(b.dataset.slide));if(b.dataset.zoom){const z=Number(b.dataset.zoom);zoom=z===0?1:Math.max(.5,Math.min(3,zoom+z*.25));render();}});
+   addEventListener('resize',render);document.addEventListener('fullscreenchange',()=>setTimeout(render,60));
+   if(layout)layout.addEventListener('transitionend',render);
+   render();
+   return{go:go};
+  }
+  addEventListener('keydown',event=>{if(event.ctrlKey||event.metaKey||event.altKey||/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)||(scrim&&!scrim.hidden))return;const k=event.key.toLowerCase();if(k==='f'){event.preventDefault();toggleFull();}else if(k==='t'){setTheatre(!layout.classList.contains('is-theatre'));}else if(event.key==='ArrowRight'||event.key==='PageDown'){event.preventDefault();if(deck&&deck.go(1))return;const n=document.querySelector('[data-viewer-next]');if(n)location.href=n.href;}else if(event.key==='ArrowLeft'||event.key==='PageUp'){event.preventDefault();if(deck&&deck.go(-1))return;const p=document.querySelector('[data-viewer-prev]');if(p)location.href=p.href;}});
+  const currentItem=document.querySelector('.viewer-item.is-current'),list=currentItem&&currentItem.closest('ol');if(list)list.scrollTop=currentItem.offsetTop-list.offsetTop-80;
+ }
  const raw=document.getElementById('activityData');if(!raw)return;
  const data=JSON.parse(raw.textContent),today=new Date(data.today+'T00:00:00Z');
  const monday=new Date(today);monday.setUTCDate(monday.getUTCDate()-((monday.getUTCDay()+6)%7));
