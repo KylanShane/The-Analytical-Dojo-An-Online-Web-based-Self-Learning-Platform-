@@ -437,6 +437,11 @@ namespace The_Analytical_Dojo
             foreach (DataRow quiz in quizzes.Rows)
             {
                 int quizId = Convert.ToInt32(quiz["quiz_id"]);
+                bool subjective = string.Equals(
+                    Convert.ToString(quiz["quiz_type"]),
+                    "SUBJ",
+                    StringComparison.OrdinalIgnoreCase
+                );
                 DataRow latest = enrolled
                     ? DojoData.LatestAttempt(UserId, quizId)
                     : null;
@@ -444,9 +449,9 @@ namespace The_Analytical_Dojo
                 object score = latest == null ? null : latest["score"];
                 bool scored = score != null && score != DBNull.Value;
 
-                string description = scored
-                    ? "MCQ / true-false score · subjective answers are ungraded"
-                    : "Subjective answers have no marks";
+                string description = subjective
+                    ? "Required reflection · submit once to complete"
+                    : "Pass at 50%+ to complete";
 
                 if (latest != null && scored)
                 {
@@ -459,7 +464,11 @@ namespace The_Analytical_Dojo
                 }
                 else if (latest != null)
                 {
-                    description += " · submitted";
+                    description =
+                        "Submitted " +
+                        Convert.ToDateTime(latest["submitted_at"])
+                            .ToString("dd MMM yyyy, HH:mm") +
+                        " · completion counted";
                 }
 
                 html.Append("<div class='lesson'>");
@@ -503,7 +512,8 @@ namespace The_Analytical_Dojo
                 {
                     html.Append(
                         "<button class='btn ghost' type='button' disabled>" +
-                        "Closed</button>"
+                        (subjective ? "Submitted ✓" : "Passed ✓") +
+                        "</button>"
                     );
                 }
 

@@ -103,6 +103,7 @@ public static class DojoData
         SELECT
             a.attempt_id,
             a.quiz_id,
+            c.course_id,
             c.course_title AS course,
             q.quiz_title AS quiz,
             q.quiz_type,
@@ -182,7 +183,6 @@ public static class DojoData
                         SELECT COUNT(*) total
                         FROM quiz_questions x
                         WHERE x.quiz_id = q.quiz_id
-                            AND x.question_type IN ('MCQ', 'TRUE_FALSE')
                     ) n
                     WHERE h.course_id = c.course_id
                         AND n.total > 0
@@ -201,14 +201,22 @@ public static class DojoData
                         ORDER BY a.submitted_at DESC, a.attempt_id DESC
                     ) latest
                     CROSS APPLY (
-                        SELECT COUNT(*) total
+                        SELECT
+                            COUNT(*) total,
+                            SUM(CASE
+                                WHEN x.question_type IN ('MCQ', 'TRUE_FALSE')
+                                THEN 1 ELSE 0
+                            END) objective_total
                         FROM quiz_questions x
                         WHERE x.quiz_id = q.quiz_id
-                            AND x.question_type IN ('MCQ', 'TRUE_FALSE')
                     ) n
                     WHERE h.course_id = c.course_id
                         AND n.total > 0
-                        AND 100.0 * latest.score_earned / n.total >= 50
+                        AND (
+                            n.objective_total = 0
+                            OR 100.0 * latest.score_earned /
+                                n.objective_total >= 50
+                        )
                 ) AS quizzes_done
             FROM course_enrollments e
             JOIN courses c ON c.course_id = e.course_id
@@ -485,7 +493,6 @@ public static class DojoData
                 SELECT COUNT(*) total
                 FROM quiz_questions x
                 WHERE x.quiz_id = q.quiz_id
-                    AND x.question_type IN ('MCQ', 'TRUE_FALSE')
             ) n
             WHERE h.course_id = @c
                 AND n.total > 0;
@@ -502,14 +509,22 @@ public static class DojoData
                 ORDER BY a.submitted_at DESC, a.attempt_id DESC
             ) latest
             CROSS APPLY (
-                SELECT COUNT(*) total
+                SELECT
+                    COUNT(*) total,
+                    SUM(CASE
+                        WHEN x.question_type IN ('MCQ', 'TRUE_FALSE')
+                        THEN 1 ELSE 0
+                    END) objective_total
                 FROM quiz_questions x
                 WHERE x.quiz_id = q.quiz_id
-                    AND x.question_type IN ('MCQ', 'TRUE_FALSE')
             ) n
             WHERE h.course_id = @c
                 AND n.total > 0
-                AND 100.0 * latest.score_earned / n.total >= 50;
+                AND (
+                    n.objective_total = 0
+                    OR 100.0 * latest.score_earned /
+                        n.objective_total >= 50
+                );
 
             SET @pct = CASE
                 WHEN @mt + @qt = 0 THEN 0

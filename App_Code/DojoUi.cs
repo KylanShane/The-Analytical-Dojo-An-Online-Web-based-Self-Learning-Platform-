@@ -45,7 +45,7 @@ public static class DojoUi
             b.Append(r["quizzes_done"]);
             b.Append(" of ");
             b.Append(r["quizzes_total"]);
-            b.Append(" scored quizzes passed");
+            b.Append(" quizzes completed");
             if (r["average_score_percentage"] != DBNull.Value)
             {
                 b.Append(" · ");
@@ -136,7 +136,7 @@ public static class DojoUi
                 b.Append(r["quizzes_done"]);
                 b.Append(" of ");
                 b.Append(r["quizzes_total"]);
-                b.Append(" scored quizzes passed");
+                b.Append(" quizzes completed");
                 if (r["average_score_percentage"] != DBNull.Value)
                 {
                     b.Append(" · ");

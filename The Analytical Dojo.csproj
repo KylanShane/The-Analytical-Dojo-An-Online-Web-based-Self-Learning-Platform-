@@ -112,6 +112,7 @@
     <Content Include="About.aspx" />
     <Content Include="App_Data\CreateDatabaseA.sql" />
     <Content Include="App_Data\Migrations\001_UpdateBadgesAndLearningMaterials.sql" />
+    <Content Include="App_Data\Migrations\002_CountSubjectiveQuizCompletion.sql" />
     <Content Include="App_Data\Migrations\README.md" />
     <Content Include="App_Data\databaseA.mdf" />
     <Content Include="App_Data\databaseA_log.ldf">

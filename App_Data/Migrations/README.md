@@ -9,4 +9,5 @@ Do not commit generated `.mdf` or `.ldf` changes.
 Current order:
 
 1. `001_UpdateBadgesAndLearningMaterials.sql`
+2. `002_CountSubjectiveQuizCompletion.sql`
 
