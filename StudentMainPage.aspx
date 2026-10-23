@@ -27,7 +27,6 @@
                 <div class="segmented" role="group" aria-label="Activity type">
                     <button type="button" data-metric="materials" aria-pressed="true">Materials</button>
                     <button type="button" data-metric="quizzes" aria-pressed="false">Quizzes</button>
-                    <button type="button" data-metric="forum" aria-pressed="false">Ask Question</button>
                 </div>
             </div>
 

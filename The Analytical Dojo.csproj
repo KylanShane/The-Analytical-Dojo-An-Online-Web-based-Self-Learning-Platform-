@@ -163,6 +163,7 @@
     <Content Include="CoursePage.aspx" />
     <Content Include="MaterialContent.ashx" />
     <Content Include="MaterialView.aspx" />
+    <Content Include="Leaderboard.aspx" />
     <Content Include="Scripts\quiz.js" />
     <Content Include="Scripts\quiz-result.js" />
     <Content Include="Content\img\logo-light.png" />
@@ -178,6 +179,39 @@
     <Content Include="Scripts\dojo.js" />
     <Content Include="Scripts\theme.js" />
     <Content Include="Images\logo.png" />
+    <Content Include="Images\Courses\data-analytics-foundations.png" />
+    <Content Include="Images\Courses\excel-for-data-analysis.png" />
+    <Content Include="Images\Courses\machine-learning-data-analytics.png" />
+    <Content Include="Images\Courses\power-bi-data-visualization.png" />
+    <Content Include="Images\Courses\python-pandas-analytics.png" />
+    <Content Include="Images\Courses\sql-for-data-analysis.png" />
+    <Content Include="Images\Courses\statistics-for-analysts.png" />
+    <Content Include="Images\Courses\time-series-analytics.png" />
+    <Content Include="Images\Slides\analytics-workflow\slide-01.png" />
+    <Content Include="Images\Slides\aggregations.png" />
+    <Content Include="Images\Slides\classification.png" />
+    <Content Include="Images\Slides\cleaning-spreadsheet-data.png" />
+    <Content Include="Images\Slides\correlation.png" />
+    <Content Include="Images\Slides\dashboard-design.png" />
+    <Content Include="Images\Slides\data-leakage.png" />
+    <Content Include="Images\Slides\data-modeling-dax.png" />
+    <Content Include="Images\Slides\data-quality.png" />
+    <Content Include="Images\Slides\data-types.png" />
+    <Content Include="Images\Slides\dataframes.png" />
+    <Content Include="Images\Slides\descriptive-statistics.png" />
+    <Content Include="Images\Slides\forecast-errors.png" />
+    <Content Include="Images\Slides\forecast-validation.png" />
+    <Content Include="Images\Slides\grouping-data.png" />
+    <Content Include="Images\Slides\joining-tables.png" />
+    <Content Include="Images\Slides\missing-data.png" />
+    <Content Include="Images\Slides\model-evaluation.png" />
+    <Content Include="Images\Slides\pivot-tables.png" />
+    <Content Include="Images\Slides\power-query.png" />
+    <Content Include="Images\Slides\probability-sampling.png" />
+    <Content Include="Images\Slides\selecting-filtering.png" />
+    <Content Include="Images\Slides\spreadsheet-formulas.png" />
+    <Content Include="Images\Slides\time-series-patterns.png" />
+    <Content Include="App_Data\SyncImageAssets.sql" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
@@ -225,6 +259,13 @@
     <Compile Include="App_Code\DojoMaterials.cs" />
     <Compile Include="MaterialContent.ashx.cs">
       <DependentUpon>MaterialContent.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Leaderboard.aspx.cs">
+      <DependentUpon>Leaderboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Leaderboard.aspx.designer.cs">
+      <DependentUpon>Leaderboard.aspx</DependentUpon>
     </Compile>
     <Compile Include="MaterialView.aspx.cs">
       <DependentUpon>MaterialView.aspx</DependentUpon>

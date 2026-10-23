@@ -42,6 +42,39 @@
  document.querySelectorAll('.hex-badge').forEach(btn=>btn.addEventListener('click',()=>{const detail=document.getElementById('badgeDetail');if(detail)detail.textContent=btn.getAttribute('data-badge-detail')||btn.title;}));
  const review=document.getElementById('reviewSearch');if(review)review.addEventListener('input',()=>{let n=0;document.querySelectorAll('[data-review]').forEach(r=>{r.hidden=!r.textContent.toLowerCase().includes(review.value.toLowerCase());if(!r.hidden)n++;});const empty=document.getElementById('reviewEmpty');if(empty)empty.hidden=n>0;});
  const forumSearch=document.getElementById('forumSearch');if(forumSearch)forumSearch.addEventListener('input',()=>{let visible=0;document.querySelectorAll('[data-forum-post]').forEach(post=>{post.hidden=!post.textContent.toLowerCase().includes(forumSearch.value.trim().toLowerCase());if(!post.hidden)visible++;});const empty=document.getElementById('forumSearchEmpty');if(empty)empty.hidden=visible>0||forumSearch.value.trim()==='';});
+ // Leaderboard: quiz picker, jump to my row, podium count-up
+ document.querySelectorAll('[data-nav-select]').forEach(select=>select.addEventListener('change',()=>{location.href=select.value;}));
+ const jumpMe=document.querySelector('[data-jump-me]'),myRow=document.getElementById('lb-me');
+ if(jumpMe&&myRow)jumpMe.addEventListener('click',()=>{myRow.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});myRow.classList.remove('is-pinged');void myRow.offsetWidth;myRow.classList.add('is-pinged');});
+ document.querySelectorAll('.lb-podium [data-count-to],.lb-me [data-count-to]').forEach(countUp);
+ // Forum: one reply box that moves under the post / reply being answered
+ const composer=document.querySelector('[data-reply-composer]');
+ if(composer){
+  const box=composer.querySelector('textarea'),send=composer.querySelector('[data-reply-send]'),chars=composer.querySelector('[data-reply-chars]');
+  const syncReply=()=>{const n=box.value.trim().length;chars.textContent=box.value.length;send.disabled=n<2;};
+  document.addEventListener('click',event=>{
+   const trigger=event.target.closest('[data-reply-to]');
+   if(trigger){
+    const anchor=trigger.closest('.reply-body')||trigger.closest('.forum-post-actions');
+    composer.querySelector('[data-reply-post]').value=trigger.dataset.post;
+    composer.querySelector('[data-reply-parent]').value=trigger.dataset.parent||'';
+    composer.querySelector('[data-reply-name]').textContent=trigger.dataset.name;
+    document.querySelectorAll('.is-replying').forEach(el=>el.classList.remove('is-replying'));
+    anchor.classList.add('is-replying');
+    anchor.after(composer);composer.hidden=false;composer.classList.remove('composer-in');void composer.offsetWidth;composer.classList.add('composer-in');
+    syncReply();box.focus();
+    return;
+   }
+   if(event.target.closest('[data-reply-cancel]')){composer.hidden=true;box.value='';document.querySelectorAll('.is-replying').forEach(el=>el.classList.remove('is-replying'));}
+   const toggle=event.target.closest('[data-thread-toggle]');
+   if(toggle){const thread=toggle.closest('[data-forum-post]').querySelector('[data-thread]');const open=toggle.getAttribute('aria-expanded')!=='true';toggle.setAttribute('aria-expanded',String(open));thread.hidden=!open;}
+  });
+  box.addEventListener('input',syncReply);
+  box.addEventListener('keydown',event=>{if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)&&!send.disabled){event.preventDefault();send.click();}if(event.key==='Escape')composer.querySelector('[data-reply-cancel]').click();});
+  // Flash the reply you just posted
+  const fresh=location.hash.indexOf('#reply-')===0&&document.getElementById(location.hash.slice(1));
+  if(fresh){fresh.classList.add('is-new');setTimeout(()=>fresh.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'}),300);}
+ }
  const chatInput=document.querySelector('[data-chat-input]');if(chatInput){const chatWindow=document.querySelector('[data-chat-window]');if(chatWindow)chatWindow.scrollTop=chatWindow.scrollHeight;document.querySelectorAll('[data-chat-prompt]').forEach(button=>button.addEventListener('click',()=>{chatInput.value=button.dataset.chatPrompt||'';chatInput.focus();}));chatInput.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();const send=document.querySelector('.dojo-chat-send');if(send&&!send.disabled)send.click();}});}
  const examples={average:'SELECT course, ROUND(AVG(score), 1) AS avg_score\nFROM my_quiz_results\nGROUP BY course\nORDER BY avg_score DESC;',all:'SELECT course, quiz, score\nFROM my_quiz_results\nORDER BY score DESC;',filter:'SELECT course, quiz, score\nFROM my_quiz_results\nWHERE score >= 80\nORDER BY score DESC;'};
  const editor=document.querySelector('.sql-editor');if(editor){document.querySelectorAll('[data-example]').forEach(b=>b.addEventListener('click',()=>{editor.value=examples[b.dataset.example];editor.focus();}));document.querySelector('[data-query-reset]').addEventListener('click',()=>{editor.value=examples.average;editor.focus();});}
@@ -57,6 +90,38 @@
   document.addEventListener('fullscreenchange',()=>{if(fullBtn)fullBtn.textContent=document.fullscreenElement?'⤡ Exit fullscreen':'⤢ Fullscreen';});
   // PDF slides: render page-by-page with PDF.js so they fill the stage
   let deck=null;
+  // Image slide decks (material_slides): one slide visible at a time
+  const imageSlides=[...stage.querySelectorAll('[data-slide]')];
+  if(imageSlides.length){
+   const thumbs=[...stage.querySelectorAll('[data-slide-go]')],progress=stage.querySelector('[data-slide-progress]'),bar=stage.querySelector('.viewer-bar');
+   const controls=document.createElement('span');controls.className='slide-controls';
+   controls.innerHTML='<button type="button" class="viewer-tool" data-slide-step="-1" aria-label="Previous slide">◀</button><span class="slide-count" aria-live="polite"></span><button type="button" class="viewer-tool" data-slide-step="1" aria-label="Next slide">▶</button>';
+   bar.insertBefore(controls,bar.querySelector('.viewer-bar-actions'));
+   const counter=controls.querySelector('.slide-count');
+   const fromHash=parseInt((location.hash.match(/^#slide-(\d+)$/)||[])[1],10);
+   let index=fromHash>0&&fromHash<=imageSlides.length?fromHash-1:0;
+   function showSlide(next,dir){
+    imageSlides.forEach((s,i)=>{s.classList.toggle('is-active',i===next);s.classList.remove('slide-in','slide-in-back');});
+    if(dir&&!reduceMotion){void imageSlides[next].offsetWidth;imageSlides[next].classList.add(dir>0?'slide-in':'slide-in-back');}
+    thumbs.forEach((t,i)=>t.classList.toggle('is-active',i===next));
+    if(thumbs[next])thumbs[next].scrollIntoView({block:'nearest',inline:'center',behavior:reduceMotion?'auto':'smooth'});
+    index=next;counter.textContent=(next+1)+' / '+imageSlides.length;
+    progress.style.width=((next+1)/imageSlides.length*100)+'%';
+    stage.querySelectorAll('[data-slide-step="-1"]').forEach(b=>b.disabled=next===0);
+    stage.querySelectorAll('[data-slide-step="1"]').forEach(b=>b.disabled=next===imageSlides.length-1);
+    // Warm the next image so it appears instantly
+    const upcoming=imageSlides[next+1]&&imageSlides[next+1].querySelector('img');if(upcoming)upcoming.loading='eager';
+    try{history.replaceState(null,'',location.pathname+location.search+'#slide-'+(next+1));}catch(e){}
+   }
+   const go=step=>{const target=index+step;if(target<0||target>=imageSlides.length)return false;showSlide(target,step);return true;};
+   stage.addEventListener('click',event=>{const step=event.target.closest('[data-slide-step]');if(step){go(Number(step.dataset.slideStep));return;}const jump=event.target.closest('[data-slide-go]');if(jump){const n=Number(jump.dataset.slideGo);showSlide(n,n>index?1:-1);}});
+   // Swipe on touch screens
+   let touchX=null;
+   stage.addEventListener('touchstart',event=>{touchX=event.touches[0].clientX;},{passive:true});
+   stage.addEventListener('touchend',event=>{if(touchX===null)return;const dx=event.changedTouches[0].clientX-touchX;if(Math.abs(dx)>45)go(dx<0?1:-1);touchX=null;});
+   showSlide(index,0);
+   deck={go:go};
+  }
   const pdfSrc=stage.dataset.pdf,frame=stage.querySelector('.viewer-frame'),pdfFrame=frame&&frame.querySelector('iframe');
   if(pdfSrc&&frame){
    const pdfjsBase='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
@@ -108,7 +173,7 @@
  const dates=data.rows.map(r=>r.day).sort();const minDate=dates.length?new Date(dates[0]+'T00:00:00Z'):new Date(monday);minDate.setUTCDate(minDate.getUTCDate()-((minDate.getUTCDay()+6)%7));
  if(minDate>monday)minDate.setTime(monday.getTime());
  const names=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
- const labels={materials:'materials completed',quizzes:'quiz attempts submitted',forum:'forum posts'};
+ const labels={materials:'materials completed',quizzes:'quiz attempts submitted'};
  function dateAt(d,n){const v=new Date(d);v.setUTCDate(v.getUTCDate()+n);return v;}
  function key(d){return d.toISOString().slice(0,10);}
  function value(d){return values.get(metric+'|'+key(d))||0;}

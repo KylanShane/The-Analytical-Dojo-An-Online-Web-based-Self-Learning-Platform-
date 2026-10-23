@@ -30,6 +30,25 @@ public static class DojoData
         }
     }
 
+    // One-off statements that do not need a shared transaction.
+    public static object Scalar(string sql, params SqlParameter[] ps)
+    {
+        using (var c = DojoDb.GetConnection())
+        {
+            c.Open();
+            return Scalar(c, null, sql, ps);
+        }
+    }
+
+    public static int Execute(string sql, params SqlParameter[] ps)
+    {
+        using (var c = DojoDb.GetConnection())
+        {
+            c.Open();
+            return Execute(c, null, sql, ps);
+        }
+    }
+
     public static object Scalar(
         SqlConnection c,
         SqlTransaction tx,
@@ -156,6 +175,7 @@ public static class DojoData
                 c.course_title,
                 c.description,
                 c.course_level,
+                c.course_image,
                 e.enrollment_id,
                 e.completion_percentage,
                 e.average_score_percentage,
@@ -311,6 +331,7 @@ public static class DojoData
             SELECT
                 u.user_id,
                 u.full_name,
+                u.[role],
                 CAST(
                     100.0 * a.score_earned / n.total
                     AS decimal(6,2)

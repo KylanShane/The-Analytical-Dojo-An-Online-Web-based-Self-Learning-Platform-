@@ -184,18 +184,7 @@ namespace The_Analytical_Dojo
                 FROM quiz_attempts
                 WHERE user_id = @userId
                     AND submitted_at IS NOT NULL
-                GROUP BY CONVERT(CHAR(10), submitted_at, 23)
-
-                UNION ALL
-
-                SELECT
-                    'forum' AS metric,
-                    CONVERT(CHAR(10), created_at, 23) AS day,
-                    COUNT(*) AS n
-                FROM forum_posts
-                WHERE user_id = @userId
-                    AND is_deleted = 0
-                GROUP BY CONVERT(CHAR(10), created_at, 23)",
+                GROUP BY CONVERT(CHAR(10), submitted_at, 23)",
                 DojoData.P("@userId", UserId)
             );
 

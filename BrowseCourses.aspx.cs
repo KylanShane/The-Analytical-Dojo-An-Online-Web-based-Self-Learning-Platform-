@@ -43,6 +43,7 @@ namespace The_Analytical_Dojo
                     c.course_title,
                     c.description,
                     c.course_level,
+                    c.course_image,
                     c.[status],
                     e.enrollment_id
                 FROM courses c
@@ -69,13 +70,14 @@ namespace The_Analytical_Dojo
                 n++;
                 bool enrolled = course["enrollment_id"] != DBNull.Value;
 
-                html.Append("<article class='course-card'><div class='course-art art-");
-                html.Append(n % 3);
-                html.Append("'><span>");
-                html.Append(n % 3 == 1 ? "SELECT *" : "{ data }");
-                html.Append("</span><b>");
-                html.Append(H(course["course_level"]));
-                html.Append("</b></div><div class='course-body'><h3>");
+                html.Append("<article class='course-card'>");
+                html.Append(DojoUi.CourseArt(course, n));
+                html.Append("<div class='course-body'>");
+                if (enrolled)
+                {
+                    html.Append("<span class='course-enrolled'>✓ Enrolled</span>");
+                }
+                html.Append("<h3>");
                 html.Append(H(course["course_title"]));
                 html.Append("</h3><p class='muted'>");
                 html.Append(H(course["description"]));

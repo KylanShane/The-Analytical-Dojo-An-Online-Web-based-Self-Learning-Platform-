@@ -60,14 +60,14 @@ INSERT INTO users (username, full_name, email, password_hash, [role], peer_leade
 
 -- ---------- courses: 8 rows (IDs 1-8) ----------
 INSERT INTO courses (course_title, description, course_image, course_level, [status], created_by, created_at) VALUES
-('Data Analytics Foundations', 'Learn practical data analytics foundations through analytics examples and exercises.', NULL, 'basic', 'PUBLISHED', 1, '2026-01-10'),
-('Excel for Data Analysis', 'Learn practical excel for data analysis through analytics examples and exercises.', NULL, 'basic', 'PUBLISHED', 1, '2026-01-10'),
-('SQL for Data Analysis', 'Learn practical sql for data analysis through analytics examples and exercises.', NULL, 'basic', 'PUBLISHED', 1, '2026-01-10'),
-('Statistics for Analysts', 'Learn practical statistics for analysts through analytics examples and exercises.', NULL, 'basic', 'PUBLISHED', 1, '2026-01-10'),
-('Python and pandas for Analytics', 'Learn practical python and pandas for analytics through analytics examples and exercises.', NULL, 'intermediate', 'PUBLISHED', 1, '2026-01-10'),
-('Power BI and Data Visualization', 'Learn practical power bi and data visualization through analytics examples and exercises.', NULL, 'intermediate', 'PUBLISHED', 1, '2026-01-10'),
-('Machine Learning for Data Analytics', 'Learn practical machine learning for data analytics through analytics examples and exercises.', NULL, 'advanced', 'PUBLISHED', 1, '2026-01-10'),
-('Time Series Analytics', 'Learn practical time series analytics through analytics examples and exercises.', NULL, 'advanced', 'PUBLISHED', 1, '2026-01-10');
+('Data Analytics Foundations', 'Learn practical data analytics foundations through analytics examples and exercises.', '/Images/Courses/data-analytics-foundations.png', 'basic', 'PUBLISHED', 1, '2026-01-10'),
+('Excel for Data Analysis', 'Learn practical excel for data analysis through analytics examples and exercises.', '/Images/Courses/excel-for-data-analysis.png', 'basic', 'PUBLISHED', 1, '2026-01-10'),
+('SQL for Data Analysis', 'Learn practical sql for data analysis through analytics examples and exercises.', '/Images/Courses/sql-for-data-analysis.png', 'basic', 'PUBLISHED', 1, '2026-01-10'),
+('Statistics for Analysts', 'Learn practical statistics for analysts through analytics examples and exercises.', '/Images/Courses/statistics-for-analysts.png', 'basic', 'PUBLISHED', 1, '2026-01-10'),
+('Python and pandas for Analytics', 'Learn practical python and pandas for analytics through analytics examples and exercises.', '/Images/Courses/python-pandas-analytics.png', 'intermediate', 'PUBLISHED', 1, '2026-01-10'),
+('Power BI and Data Visualization', 'Learn practical power bi and data visualization through analytics examples and exercises.', '/Images/Courses/power-bi-data-visualization.png', 'intermediate', 'PUBLISHED', 1, '2026-01-10'),
+('Machine Learning for Data Analytics', 'Learn practical machine learning for data analytics through analytics examples and exercises.', '/Images/Courses/machine-learning-data-analytics.png', 'advanced', 'PUBLISHED', 1, '2026-01-10'),
+('Time Series Analytics', 'Learn practical time series analytics through analytics examples and exercises.', '/Images/Courses/time-series-analytics.png', 'advanced', 'PUBLISHED', 1, '2026-01-10');
 
 -- ---------- course_chapters: 24 rows (IDs 1-24) ----------
 INSERT INTO course_chapters (course_id, chapter_title, description, chapter_order) VALUES
@@ -146,6 +146,33 @@ INSERT INTO course_materials (chapter_id, material_title, description, material_
 (23, 'Forecast Validation - Walkthrough', 'Analytics lesson on forecast validation.', 'VIDEO', '/demo-materials/chapter-23/walkthrough.mp4', 1, '2026-01-12'),
 (24, 'Forecast Errors - Slides', 'Analytics lesson on forecast errors.', 'PPT', '/demo-materials/chapter-24/slides.pptx', 1, '2026-01-12'),
 (24, 'Forecast Errors - Walkthrough', 'Analytics lesson on forecast errors.', 'VIDEO', '/demo-materials/chapter-24/walkthrough.mp4', 1, '2026-01-12');
+
+-- ---------- material_slides: one image page per slide material ----------
+INSERT INTO material_slides (material_id, slide_order, image_url, alt_text) VALUES
+(1, 1, '/Images/Slides/analytics-workflow/slide-01.png', 'The analytics workflow: Ask, Collect, Clean, Analyze, Share'),
+(3, 1, '/Images/Slides/data-types.png', 'Data types'),
+(5, 1, '/Images/Slides/data-quality.png', 'Data quality'),
+(7, 1, '/Images/Slides/spreadsheet-formulas.png', 'Spreadsheet formulas'),
+(9, 1, '/Images/Slides/cleaning-spreadsheet-data.png', 'Cleaning spreadsheet data'),
+(11, 1, '/Images/Slides/pivot-tables.png', 'Pivot tables'),
+(13, 1, '/Images/Slides/selecting-filtering.png', 'Selecting and filtering'),
+(15, 1, '/Images/Slides/aggregations.png', 'Aggregations'),
+(17, 1, '/Images/Slides/joining-tables.png', 'Joining tables'),
+(19, 1, '/Images/Slides/descriptive-statistics.png', 'Descriptive statistics'),
+(21, 1, '/Images/Slides/probability-sampling.png', 'Probability and sampling'),
+(23, 1, '/Images/Slides/correlation.png', 'Correlation'),
+(25, 1, '/Images/Slides/dataframes.png', 'DataFrames'),
+(27, 1, '/Images/Slides/missing-data.png', 'Missing data'),
+(29, 1, '/Images/Slides/grouping-data.png', 'Grouping data'),
+(31, 1, '/Images/Slides/power-query.png', 'Power Query'),
+(33, 1, '/Images/Slides/data-modeling-dax.png', 'Data modeling and DAX'),
+(35, 1, '/Images/Slides/dashboard-design.png', 'Dashboard design'),
+(37, 1, '/Images/Slides/classification.png', 'Classification'),
+(39, 1, '/Images/Slides/model-evaluation.png', 'Model evaluation'),
+(41, 1, '/Images/Slides/data-leakage.png', 'Data leakage'),
+(43, 1, '/Images/Slides/time-series-patterns.png', 'Time series patterns'),
+(45, 1, '/Images/Slides/forecast-validation.png', 'Forecast validation'),
+(47, 1, '/Images/Slides/forecast-errors.png', 'Forecast errors');
 
 -- ---------- course_enrollments: 59 rows (IDs 1-59) ----------
 INSERT INTO course_enrollments (user_id, course_id, enrolled_at, completion_percentage, average_score_percentage, completed_at) VALUES
