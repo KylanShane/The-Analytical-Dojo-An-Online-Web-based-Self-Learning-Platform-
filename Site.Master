@@ -1,69 +1,66 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.master.cs" Inherits="The_Analytical_Dojo.SiteMaster" %>
-
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.Master.cs" Inherits="The_Analytical_Dojo.SiteMaster" %>
 <!DOCTYPE html>
-
 <html lang="en">
 <head runat="server">
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%: Page.Title %> - My ASP.NET Application</title>
-
-    <asp:PlaceHolder runat="server">
-        <%: Scripts.Render("~/bundles/modernizr") %>
-    </asp:PlaceHolder>
-
-    <webopt:bundlereference runat="server" path="~/Content/css" />
-    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
-
+ <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+ <title>The Analytical Dojo</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+ <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+ <link href="<%= ResolveUrl("~/Content/dojo-theme.css") %>?v=20261022" rel="stylesheet" />
+ <script src="<%= ResolveUrl("~/Scripts/theme.js") %>"></script>
+ <asp:ContentPlaceHolder ID="Head" runat="server" />
 </head>
-<body>
-    <form runat="server">
-        <asp:ScriptManager runat="server">
-            <Scripts>
-                <%--To learn more about bundling scripts in ScriptManager see https://go.microsoft.com/fwlink/?LinkID=301884 --%>
-                <%--Framework Scripts--%>
-                <asp:ScriptReference Name="MsAjaxBundle" />
-                <asp:ScriptReference Name="jquery" />
-                <asp:ScriptReference Name="WebForms.js" Assembly="System.Web" Path="~/Scripts/WebForms/WebForms.js" />
-                <asp:ScriptReference Name="WebUIValidation.js" Assembly="System.Web" Path="~/Scripts/WebForms/WebUIValidation.js" />
-                <asp:ScriptReference Name="MenuStandards.js" Assembly="System.Web" Path="~/Scripts/WebForms/MenuStandards.js" />
-                <asp:ScriptReference Name="GridView.js" Assembly="System.Web" Path="~/Scripts/WebForms/GridView.js" />
-                <asp:ScriptReference Name="DetailsView.js" Assembly="System.Web" Path="~/Scripts/WebForms/DetailsView.js" />
-                <asp:ScriptReference Name="TreeView.js" Assembly="System.Web" Path="~/Scripts/WebForms/TreeView.js" />
-                <asp:ScriptReference Name="WebParts.js" Assembly="System.Web" Path="~/Scripts/WebForms/WebParts.js" />
-                <asp:ScriptReference Name="Focus.js" Assembly="System.Web" Path="~/Scripts/WebForms/Focus.js" />
-                <asp:ScriptReference Name="WebFormsBundle" />
-                <%--Site Scripts--%>
-            </Scripts>
-        </asp:ScriptManager>
-
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
-            <div class="container">
-                <a class="navbar-brand" runat="server" href="~/">Application name</a>
-                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Toggle navigation" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/About">About</a></li>
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/Contact">Contact</a></li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-        <div class="container body-content">
-            <asp:ContentPlaceHolder ID="MainContent" runat="server">
-            </asp:ContentPlaceHolder>
-            <hr />
-            <footer>
-                <p>&copy; <%: DateTime.Now.Year %> - My ASP.NET Application</p>
-            </footer>
-        </div>
-    </form>
-    <asp:PlaceHolder runat="server">
-        <%: Scripts.Render("~/Scripts/bootstrap.js") %>
-    </asp:PlaceHolder>
+<body class="dojo">
+ <a class="skip" href="#main">Skip to content</a>
+ <form id="form1" runat="server">
+  <asp:ScriptManager ID="ScriptManager1" runat="server" />
+  <input type="hidden" name="dojoCsrf" value="<%= Server.HtmlEncode(Convert.ToString(Session["DojoCsrf"])) %>" />
+  <div class="scroll-progress" data-scroll-progress aria-hidden="true"></div>
+  <header class="site-chrome" data-site-header>
+   <div class="masthead">
+    <a class="brand" href="<%= ResolveUrl("~/StudentMainPage.aspx") %>" aria-label="The Analytical Dojo home">
+     <span class="brand-logo"><img data-logo src="<%= ResolveUrl("~/Content/img/logo-dark.png") %>" alt="The Analytical Dojo" width="150" height="49" /></span>
+     <span class="brand-copy"><small>train.your.data</small></span>
+    </a>
+    <div class="tools">
+     <button type="button" class="course-search-trigger" data-search-open aria-label="Search courses">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><span>Search courses</span><kbd>Ctrl K</kbd>
+     </button>
+     <div class="header-popover-wrap">
+      <button type="button" class="icon-btn notification-btn" data-notification-toggle aria-label="Notifications<%= UnreadCount > 0 ? ", " + UnreadCount + " unread" : "" %>" aria-expanded="false">
+       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10 21a2 2 0 0 0 4 0"></path></svg>
+       <% if (UnreadCount > 0) { %><span class="notification-count"><%= UnreadCount > 9 ? "9+" : UnreadCount.ToString() %></span><% } %>
+      </button>
+      <div class="header-popover notification-panel" data-notification-panel hidden>
+       <div class="popover-heading"><div><span>INBOX</span><strong>Forum activity</strong></div><span class="live-signal" aria-hidden="true"></span></div>
+       <%= NotificationHtml %>
+      </div>
+     </div>
+     <button type="button" class="icon-btn" data-theme-toggle aria-label="Switch colour theme">◐</button>
+     <a class="avatar" href="<%= ResolveUrl("~/Profile.aspx") %>" title="Your profile" aria-label="Open your profile"><%= Server.HtmlEncode(Initials) %></a>
+    </div>
+   </div>
+   <nav class="navrow" aria-label="Main navigation">
+    <span class="nav-indicator" aria-hidden="true"></span>
+    <a href="<%= ResolveUrl("~/StudentMainPage.aspx") %>"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10H3z"></path></svg>Home</a>
+    <a href="<%= ResolveUrl("~/MyCourses.aspx") %>"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"></path><path d="M4 19V5"></path></svg>My courses</a>
+    <a href="<%= ResolveUrl("~/BrowseCourses.aspx") %>"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="m15.5 8.5-2 5-5 2 2-5z"></path></svg>Browse courses</a>
+    <a href="<%= ResolveUrl("~/ReviewQuiz.aspx") %>"><svg viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 9-12h-7z"></path></svg>Quizzes</a>
+    <a href="<%= ResolveUrl("~/AskQuestion.aspx") %>"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.7 7L3 21l2-5.5A8 8 0 1 1 21 12z"></path></svg>Ask Question</a>
+   </nav>
+  </header>
+  <main id="main" class="dashboard"><asp:ContentPlaceHolder ID="Main" runat="server" /><asp:ContentPlaceHolder ID="MainContent" runat="server" /></main>
+  <footer class="footer"><span class="footer-status"><i aria-hidden="true"></i>The Analytical Dojo · all systems learning</span><span>Build signal. Cut noise. Keep learning.</span><span>© <%= DateTime.Now.Year %></span></footer>
+  <div class="search-scrim" data-search-scrim hidden>
+   <section class="command-palette" role="dialog" aria-modal="true" aria-labelledby="searchTitle">
+    <div class="command-input-wrap"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><label id="searchTitle" class="sr-only" for="globalCourseSearch">Search courses</label><input id="globalCourseSearch" type="search" placeholder="Search for a course…" autocomplete="off" /><kbd>ESC</kbd></div>
+    <div class="command-meta"><span>COURSE DIRECTORY</span><span>↑↓ navigate · enter open</span></div>
+    <div class="command-results" data-search-results></div>
+   </section>
+  </div>
+  <script type="application/json" id="dojoCourseIndex"><%= CourseSearchJson %></script>
+ </form>
+ <script src="<%= ResolveUrl("~/Scripts/dojo.js") %>?v=20261022"></script>
+ <asp:ContentPlaceHolder ID="Scripts" runat="server" />
 </body>
 </html>

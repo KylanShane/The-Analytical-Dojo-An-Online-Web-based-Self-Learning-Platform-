@@ -1,4 +1,4 @@
-﻿-- =====================================================
+-- =====================================================
 -- The Analytical Dojo - full schema with chapters
 -- LocalDB / SQL Server
 -- =====================================================
@@ -76,6 +76,27 @@ CREATE TABLE course_materials (
 
     CONSTRAINT CK_materials_type
         CHECK (material_type IN ('VIDEO', 'PPT'))
+);
+
+-- ---------- 4A. material_slides ----------
+-- Optional image-based presentation pages. When rows exist for a PPT
+-- material, the application can show these images with Previous/Next controls
+-- instead of depending on an external PDF or PowerPoint viewer.
+CREATE TABLE material_slides (
+    slide_id     INT IDENTITY(1,1) PRIMARY KEY,
+    material_id  INT           NOT NULL,
+    slide_order  INT           NOT NULL,
+    image_url    NVARCHAR(500) NOT NULL,
+    alt_text     NVARCHAR(255) NULL,
+
+    CONSTRAINT FK_material_slides_material
+        FOREIGN KEY (material_id) REFERENCES course_materials(material_id),
+
+    CONSTRAINT UQ_material_slides_order
+        UNIQUE (material_id, slide_order),
+
+    CONSTRAINT CK_material_slides_order
+        CHECK (slide_order > 0)
 );
 
 -- ---------- 5. course_enrollments ----------
@@ -175,6 +196,44 @@ CREATE TABLE forum_posts (
 
     CONSTRAINT FK_forum_course
         FOREIGN KEY (course_id) REFERENCES courses(course_id)
+);
+
+-- Replies are kept separately so every reply clearly belongs to one main
+-- discussion. parent_reply_id supports replies to replies when needed.
+CREATE TABLE forum_replies (
+    reply_id        INT IDENTITY(1,1) PRIMARY KEY,
+    post_id         INT           NOT NULL,
+    user_id         INT           NOT NULL,
+    parent_reply_id INT           NULL,
+    content         NVARCHAR(MAX) NOT NULL,
+    created_at      DATETIME2     NOT NULL DEFAULT SYSDATETIME(),
+    is_deleted      BIT           NOT NULL DEFAULT 0,
+
+    CONSTRAINT FK_forum_reply_post
+        FOREIGN KEY (post_id) REFERENCES forum_posts(post_id),
+
+    CONSTRAINT FK_forum_reply_user
+        FOREIGN KEY (user_id) REFERENCES users(user_id),
+
+    CONSTRAINT FK_forum_reply_parent
+        FOREIGN KEY (parent_reply_id) REFERENCES forum_replies(reply_id),
+
+    CONSTRAINT CK_forum_reply_not_own_parent
+        CHECK (parent_reply_id IS NULL OR parent_reply_id <> reply_id)
+);
+
+CREATE INDEX IX_forum_replies_post_created
+    ON forum_replies (post_id, created_at);
+
+-- Per-student forum notification state. A new post from another learner is
+-- unread until the student opens that course's forum.
+CREATE TABLE forum_notification_reads (
+    user_id      INT       NOT NULL,
+    course_id    INT       NOT NULL,
+    last_seen_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+    CONSTRAINT PK_forum_notification_reads PRIMARY KEY (user_id, course_id),
+    CONSTRAINT FK_forum_read_user FOREIGN KEY (user_id) REFERENCES users(user_id),
+    CONSTRAINT FK_forum_read_course FOREIGN KEY (course_id) REFERENCES courses(course_id)
 );
 
 -- ---------- 11. peer_call_requests ----------
