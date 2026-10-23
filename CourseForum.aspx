@@ -1,4 +1,4 @@
-<%@ Page Title="Course forum | The Analytical Dojo" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="CourseForum.aspx.cs" Inherits="The_Analytical_Dojo.CourseForum" %>
+﻿<%@ Page Title="Course forum | The Analytical Dojo" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="CourseForum.aspx.cs" Inherits="The_Analytical_Dojo.CourseForum" %>
 
 <asp:Content ID="PageContent" ContentPlaceHolderID="Main" runat="server">
     <div class="learning-back"><a href="CoursePage.aspx?id=<%= CourseId %>">← Back to course</a></div>
@@ -31,6 +31,21 @@
                 <div class="section-head"><div><span class="learning-kicker">THE CONVERSATION</span><h2 id="discussion-heading">Course discussions <asp:Literal ID="PostCount" runat="server" /></h2></div><a class="text-link" href="CourseForum.aspx?course=<%= CourseId %>">Latest first ↻</a></div>
                 <label class="forum-search-label" for="forumSearch">Find a discussion</label><input id="forumSearch" class="input forum-search" type="search" placeholder="Search this course’s discussions" autocomplete="off" /><p id="forumSearchEmpty" class="empty" hidden>No discussions match that search.</p>
                 <asp:Literal ID="Feed" runat="server" />
+
+                <!-- One reply box, moved under the post or reply being answered (Scripts/dojo.js) -->
+                <div class="reply-composer" data-reply-composer hidden>
+                    <label class="reply-composer-label" for="replyContent">Replying to <strong data-reply-name></strong></label>
+                    <textarea id="replyContent" name="replyContent" class="input" rows="3" maxlength="2000" placeholder="Add to the conversation…"></textarea>
+                    <input type="hidden" name="replyPost" data-reply-post />
+                    <input type="hidden" name="replyParent" data-reply-parent />
+                    <div class="reply-composer-footer">
+                        <small><span data-reply-chars>0</span> / 2,000 · Ctrl + Enter to send</small>
+                        <span>
+                            <button type="button" class="btn ghost" data-reply-cancel>Cancel</button>
+                            <button type="submit" class="btn" name="sendReply" value="1" data-reply-send disabled>Reply ↩</button>
+                        </span>
+                    </div>
+                </div>
             </section>
         </div>
         <aside class="forum-side">

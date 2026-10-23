@@ -27,13 +27,7 @@ public static class DojoUi
             b.Append(status);
             b.Append("'>");
 
-            b.Append("<div class='course-art art-");
-            b.Append(n % 3);
-            b.Append("'><span>");
-            b.Append(n % 3 == 1 ? "SELECT *" : "{ data }");
-            b.Append("</span><b>");
-            b.Append(DojoPage.H(r["course_level"]));
-            b.Append("</b></div>");
+            b.Append(CourseArt(r, n));
 
             b.Append("<div class='course-body'><h3>");
             b.Append(DojoPage.H(r["course_title"]));
@@ -261,6 +255,49 @@ public static class DojoUi
         }
 
         return b.Append("</div><p class='muted' id='badgeDetail'>Tap a badge to see how it was earned.</p>").ToString();
+    }
+
+    // Small badge naming a user's role (forum posts, replies, leaderboard).
+    public static string RolePill(object role)
+    {
+        switch (Convert.ToString(role))
+        {
+            case "ADMIN":
+                return "<span class='role-pill role-admin'>Admin</span>";
+            case "PEER LEADER":
+                return "<span class='role-pill role-peer'>Peer Leader</span>";
+            default:
+                return "<span class='role-pill role-student'>Student</span>";
+        }
+    }
+
+    // Course cover: the course image when one is set, otherwise the code-style art.
+    // A missing image file falls back to the art too (no broken-image icon).
+    public static string CourseArt(DataRow r, int n)
+    {
+        string image = r.Table.Columns.Contains("course_image") && r["course_image"] != DBNull.Value
+            ? DojoMaterials.SafeUrl(Convert.ToString(r["course_image"]))
+            : null;
+
+        var b = new StringBuilder();
+        b.Append("<div class='course-art art-");
+        b.Append(n % 3);
+        b.Append(image != null ? " has-image" : "");
+        b.Append("'>");
+
+        if (image != null)
+        {
+            b.Append("<img src='");
+            b.Append(DojoPage.H(image));
+            b.Append("' alt='' loading='lazy' onerror=\"this.parentNode.classList.remove('has-image');this.remove();\" />");
+        }
+
+        b.Append("<span>");
+        b.Append(n % 3 == 1 ? "SELECT *" : "{ data }");
+        b.Append("</span><b>");
+        b.Append(DojoPage.H(r["course_level"]));
+        b.Append("</b></div>");
+        return b.ToString();
     }
 
     public static string LeaderboardList(DataTable ranks, int userId)

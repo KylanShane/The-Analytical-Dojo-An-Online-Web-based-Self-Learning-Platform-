@@ -132,7 +132,16 @@ namespace The_Analytical_Dojo
             Title = material["material_title"] + " | The Analytical Dojo";
 
             DisplayHead(material, courseId, previousId, nextId, materialUrl, position, playlist.Rows.Count);
-            DisplayStage(material, materialType, embedUrl);
+            // Slide decks stored as images (one row per page).
+            DataTable slides = DojoData.Query(@"
+                SELECT slide_order, image_url, alt_text
+                FROM material_slides
+                WHERE material_id = @materialId
+                ORDER BY slide_order",
+                DojoData.P("@materialId", materialId)
+            );
+
+            DisplayStage(material, materialType, embedUrl, slides);
             DisplayPlaylist(playlist, materialId);
         }
 
@@ -224,10 +233,11 @@ namespace The_Analytical_Dojo
             ViewerHead.Text = html.ToString();
         }
 
-        private void DisplayStage(DataRow material, string materialType, string embedUrl)
+        private void DisplayStage(DataRow material, string materialType, string embedUrl, DataTable slides)
         {
             bool video = DojoMaterials.IsVideo(materialType);
-            bool pdf = embedUrl != null && DojoMaterials.IsPdf(embedUrl);
+            bool imageDeck = slides.Rows.Count > 0;
+            bool pdf = !imageDeck && embedUrl != null && DojoMaterials.IsPdf(embedUrl);
             StringBuilder html = new StringBuilder();
 
             // PDF slides are drawn page-by-page by Scripts/dojo.js (PDF.js);
@@ -236,13 +246,18 @@ namespace The_Analytical_Dojo
                 "<section class='viewer-stage " +
                 (video ? "is-video" : "is-slides") +
                 "' data-viewer-stage" +
+                (imageDeck ? " data-image-deck" : "") +
                 (pdf ? " data-pdf='" + H(embedUrl) + "'" : "") +
                 ">"
             );
 
             html.Append("<div class='viewer-frame'>");
 
-            if (embedUrl == null)
+            if (imageDeck)
+            {
+                html.Append(ImageDeck(slides, Convert.ToString(material["material_title"])));
+            }
+            else if (embedUrl == null)
             {
                 html.Append(
                     "<div class='viewer-empty'><span>⌁</span>" +
@@ -265,6 +280,11 @@ namespace The_Analytical_Dojo
 
             html.Append("</div>");
 
+            if (imageDeck)
+            {
+                html.Append(SlideStrip(slides));
+            }
+
             html.Append("<div class='viewer-bar'>");
             html.Append("<span class='viewer-type'>");
             html.Append(video ? "▶ VIDEO" : "▤ SLIDES");
@@ -279,6 +299,59 @@ namespace The_Analytical_Dojo
             html.Append("</section>");
 
             Stage.Text = html.ToString();
+        }
+
+        // Every slide is in the page; Scripts/dojo.js shows one at a time.
+        private static string ImageDeck(DataTable slides, string title)
+        {
+            StringBuilder html = new StringBuilder();
+            html.Append("<div class='slide-deck image-deck' data-slides>");
+
+            for (int i = 0; i < slides.Rows.Count; i++)
+            {
+                DataRow slide = slides.Rows[i];
+                string src = DojoMaterials.SafeUrl(Convert.ToString(slide["image_url"]));
+                string alt = slide["alt_text"] == DBNull.Value
+                    ? title + " - slide " + (i + 1)
+                    : Convert.ToString(slide["alt_text"]);
+
+                html.Append("<figure class='image-slide" + (i == 0 ? " is-active" : "") + "' data-slide>");
+                html.Append("<div class='image-slide-missing' aria-hidden='true'><span>" + (i + 1).ToString("00") + "</span><small>Slide image not found</small></div>");
+                if (src != null)
+                {
+                    html.Append(
+                        "<img src='" + H(src) + "' alt='" + H(alt) + "'" +
+                        (i > 1 ? " loading='lazy'" : "") +
+                        " onerror=\"this.remove();\" />"
+                    );
+                }
+                html.Append("</figure>");
+            }
+
+            html.Append("</div>");
+            html.Append("<button type='button' class='slide-zone is-prev' data-slide-step='-1' aria-label='Previous slide'>‹</button>");
+            html.Append("<button type='button' class='slide-zone is-next' data-slide-step='1' aria-label='Next slide'>›</button>");
+            html.Append("<div class='slide-progress' aria-hidden='true'><span data-slide-progress></span></div>");
+            return html.ToString();
+        }
+
+        private static string SlideStrip(DataTable slides)
+        {
+            StringBuilder html = new StringBuilder("<div class='slide-strip' aria-label='All slides'>");
+
+            for (int i = 0; i < slides.Rows.Count; i++)
+            {
+                string src = DojoMaterials.SafeUrl(Convert.ToString(slides.Rows[i]["image_url"]));
+                html.Append("<button type='button' class='slide-thumb" + (i == 0 ? " is-active" : "") + "' data-slide-go='" + i + "' aria-label='Go to slide " + (i + 1) + "'>");
+                html.Append("<span>" + (i + 1) + "</span>");
+                if (src != null)
+                {
+                    html.Append("<img src='" + H(src) + "' alt='' loading='lazy' onerror=\"this.remove();\" />");
+                }
+                html.Append("</button>");
+            }
+
+            return html.Append("</div>").ToString();
         }
 
         private void DisplayPlaylist(DataTable playlist, int currentId)

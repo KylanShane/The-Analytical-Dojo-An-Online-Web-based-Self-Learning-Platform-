@@ -284,7 +284,18 @@ namespace The_Analytical_Dojo
                     m.description,
                     m.material_type,
                     m.file_url,
-                    p.completed_at
+                    p.completed_at,
+                    (
+                        SELECT COUNT(*)
+                        FROM material_slides s
+                        WHERE s.material_id = m.material_id
+                    ) AS slide_count,
+                    (
+                        SELECT TOP 1 s.image_url
+                        FROM material_slides s
+                        WHERE s.material_id = m.material_id
+                        ORDER BY s.slide_order
+                    ) AS first_slide
                 FROM course_materials m
                 LEFT JOIN student_material_progress p
                     ON p.material_id = m.material_id
@@ -327,15 +338,18 @@ namespace The_Analytical_Dojo
                 string viewUrl =
                     "MaterialView.aspx?id=" + H(material["material_id"]);
 
+                // Image slide decks (material_slides) open in the viewer too.
+                int slideCount = Convert.ToInt32(material["slide_count"]);
+                bool viewable = embedUrl != null || slideCount > 0;
+
                 html.Append("<div class='lesson'>");
 
                 // Preview tile that opens the full-size viewer.
-                if (enrolled && embedUrl != null)
+                if (enrolled && viewable)
                 {
-                    string thumbnail = DojoMaterials.ThumbnailUrl(
-                        materialType,
-                        materialUrl
-                    );
+                    string thumbnail = slideCount > 0
+                        ? DojoMaterials.SafeUrl(Convert.ToString(material["first_slide"]))
+                        : DojoMaterials.ThumbnailUrl(materialType, materialUrl);
                     bool video = DojoMaterials.IsVideo(materialType);
 
                     html.Append(
@@ -345,24 +359,25 @@ namespace The_Analytical_Dojo
                         "aria-label='View " + H(material["material_title"]) + "'>"
                     );
 
+                    // Art sits behind the thumbnail and shows if the image is missing.
+                    html.Append(
+                        "<span class='material-tile-art' aria-hidden='true'>" +
+                        "<i></i><i></i><i></i></span>"
+                    );
+
                     if (thumbnail != null)
                     {
                         html.Append(
-                            "<img src='" + H(thumbnail) + "' alt='' loading='lazy' />"
-                        );
-                    }
-                    else
-                    {
-                        html.Append(
-                            "<span class='material-tile-art' aria-hidden='true'>" +
-                            "<i></i><i></i><i></i></span>"
+                            "<img src='" + H(thumbnail) + "' alt='' loading='lazy' onerror=\"this.remove();\" />"
                         );
                     }
 
                     html.Append(
                         "<span class='material-tile-play' aria-hidden='true'>" +
                         (video ? "▶" : "⤢") +
-                        "</span></a>"
+                        "</span>" +
+                        (slideCount > 0 ? "<span class='material-tile-count'>" + slideCount + " slides</span>" : "") +
+                        "</a>"
                     );
                 }
                 html.Append("<div class='lesson-info'>");
@@ -387,7 +402,7 @@ namespace The_Analytical_Dojo
                 {
                     html.Append("<span class='muted'>Enrol to view this material</span>");
                 }
-                else if (embedUrl != null)
+                else if (viewable)
                 {
                     html.Append(
                         "<a class='btn ghost' href='" + viewUrl + "'>" +

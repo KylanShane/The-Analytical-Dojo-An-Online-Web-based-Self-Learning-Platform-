@@ -9,7 +9,8 @@ CREATE TABLE users (
     username          NVARCHAR(50)  NOT NULL UNIQUE,
     full_name         NVARCHAR(100) NOT NULL,
     email             NVARCHAR(150) NOT NULL UNIQUE,
-    password_hash     NVARCHAR(255) NOT NULL,
+    password_hash     NVARCHAR(255) NULL,
+    google_sub        NVARCHAR(64)  NULL,
     [role]            NVARCHAR(20)  NOT NULL DEFAULT 'STUDENT',
     peer_leader_since DATETIME2     NULL,
     created_at        DATETIME2     NOT NULL DEFAULT SYSDATETIME(),
@@ -17,6 +18,10 @@ CREATE TABLE users (
     CONSTRAINT CK_users_role
         CHECK ([role] IN ('STUDENT', 'ADMIN', 'PEER LEADER'))
 );
+
+CREATE UNIQUE INDEX UX_users_google_sub
+    ON users(google_sub)
+    WHERE google_sub IS NOT NULL;
 
 -- ---------- 2. courses ----------
 CREATE TABLE courses (
@@ -79,21 +84,18 @@ CREATE TABLE course_materials (
 );
 
 -- ---------- 4A. material_slides ----------
--- Optional image-based presentation pages. When rows exist for a PPT
--- material, the application can show these images with Previous/Next controls
--- instead of depending on an external PDF or PowerPoint viewer.
+-- Image pages used by slide materials in the in-app lesson viewer.
 CREATE TABLE material_slides (
-    slide_id     INT IDENTITY(1,1) PRIMARY KEY,
-    material_id  INT           NOT NULL,
-    slide_order  INT           NOT NULL,
-    image_url    NVARCHAR(500) NOT NULL,
-    alt_text     NVARCHAR(255) NULL,
+    material_id INT           NOT NULL,
+    slide_order INT           NOT NULL,
+    image_url   NVARCHAR(500) NOT NULL,
+    alt_text    NVARCHAR(255) NULL,
+
+    CONSTRAINT PK_material_slides
+        PRIMARY KEY (material_id, slide_order),
 
     CONSTRAINT FK_material_slides_material
         FOREIGN KEY (material_id) REFERENCES course_materials(material_id),
-
-    CONSTRAINT UQ_material_slides_order
-        UNIQUE (material_id, slide_order),
 
     CONSTRAINT CK_material_slides_order
         CHECK (slide_order > 0)
