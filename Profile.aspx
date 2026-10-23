@@ -19,7 +19,9 @@
 
         <section class="panel">
             <h2>Account details</h2>
-            <p class="muted">You can change your username, email and password. Confirm with your current password.</p>
+            <p class="muted">
+                <asp:Literal ID="IntroText" runat="server" Text="You can change your username, email and password. Confirm with your current password." />
+            </p>
 
             <asp:Label ID="Status" runat="server" CssClass="notice" Visible="false" role="status" />
 
@@ -38,6 +40,7 @@
                 <asp:TextBox ID="Email" runat="server" CssClass="input" TextMode="Email" MaxLength="150" />
             </div>
 
+            <asp:Panel ID="PasswordPanel" runat="server">
             <div class="field">
                 <asp:Label runat="server" AssociatedControlID="CurrentPassword" Text="Current password" />
                 <asp:TextBox ID="CurrentPassword" runat="server" CssClass="input" TextMode="Password" />
@@ -52,6 +55,11 @@
                 <asp:Label runat="server" AssociatedControlID="ConfirmPassword" Text="Confirm new password" />
                 <asp:TextBox ID="ConfirmPassword" runat="server" CssClass="input" TextMode="Password" />
             </div>
+            </asp:Panel>
+
+            <asp:Panel ID="GoogleNote" runat="server" Visible="false" CssClass="notice">
+                You signed in with Google, so your password is managed by Google and cannot be added or changed here.
+            </asp:Panel>
 
             <asp:Button ID="Save" runat="server" CssClass="btn" Text="Save changes" OnClick="Save_Click" />
         </section>
