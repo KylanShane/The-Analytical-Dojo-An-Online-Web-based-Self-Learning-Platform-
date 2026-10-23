@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -127,9 +127,6 @@
     <Content Include="AdminUsers.aspx" />
     <Content Include="Content\AdminDashboard.css" />
     <Content Include="App_Data\CreateDatabaseA.sql" />
-    <Content Include="App_Data\Migrations\001_UpdateBadgesAndLearningMaterials.sql" />
-    <Content Include="App_Data\Migrations\002_CountSubjectiveQuizCompletion.sql" />
-    <Content Include="App_Data\Migrations\README.md" />
     <Content Include="App_Data\databaseA.mdf" />
     <Content Include="App_Data\databaseA_log.ldf">
       <DependentUpon>databaseA.mdf</DependentUpon>
@@ -397,15 +394,6 @@
     </Compile>
     <Compile Include="StudentMainPage.aspx.cs">
       <DependentUpon>StudentMainPage.aspx</DependentUpon>
-    <Compile Include="Site.Mobile.Master.cs">
-      <DependentUpon>Site.Mobile.Master</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Site.Mobile.Master.designer.cs">
-      <DependentUpon>Site.Mobile.Master</DependentUpon>
-    </Compile>
-    <Compile Include="ViewSwitcher.ascx.cs">
-      <DependentUpon>ViewSwitcher.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="StudentMainPage.aspx.designer.cs">
