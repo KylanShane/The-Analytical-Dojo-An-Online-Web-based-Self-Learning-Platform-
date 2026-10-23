@@ -22,7 +22,11 @@ body {
 
 .sidebar {
     width: 260px;
-    min-height: 100vh;
+    height: 100vh; /* was min-height */
+    position: sticky;
+    top: 0;
+    align-self: flex-start; /* stops flex from stretching it to page height */
+    overflow-y: auto; /* menu scrolls inside itself on short screens */
     background: #1B1A55;
     padding: 28px 22px;
     display: flex;
@@ -63,6 +67,58 @@ body {
     }
 
     .sidebar-link.active {
+        background: rgba(255, 255, 255, 0.10);
+        color: #FFC83D;
+        font-weight: bold;
+        border-right: 4px solid #FFC83D;
+    }
+
+/* Courses group: link + submenu */
+.sidebar-group > .sidebar-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+    .sidebar-group > .sidebar-link::after {
+        content: "\25BE";
+        font-size: 12px;
+        transition: transform 0.2s ease;
+    }
+
+.sidebar-group:hover > .sidebar-link::after,
+.sidebar-group.open > .sidebar-link::after {
+    transform: rotate(180deg);
+}
+
+.sidebar-submenu {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.sidebar-group:hover .sidebar-submenu,
+.sidebar-group.open .sidebar-submenu {
+    display: flex;
+}
+
+.sidebar-sublink {
+    display: block;
+    padding: 11px 16px 11px 34px;
+    color: #C9CAFF;
+    text-decoration: none;
+    border-radius: 7px;
+    font-size: 14px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+    .sidebar-sublink:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #FFFFFF;
+    }
+
+    .sidebar-sublink.active {
         background: rgba(255, 255, 255, 0.10);
         color: #FFC83D;
         font-weight: bold;

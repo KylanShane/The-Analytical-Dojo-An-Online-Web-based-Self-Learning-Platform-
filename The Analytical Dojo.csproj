@@ -132,10 +132,20 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="About.aspx" />
+    <Content Include="AdminCourse.aspx" />
+    <Content Include="AdminCreateCourse.aspx" />
+    <Content Include="AdminCreateMaterial.aspx" />
+    <Content Include="AdminCreateQuiz.aspx" />
     <Content Include="AdminDashboard.aspx" />
     <Content Include="AdminLeaderboard.aspx" />
+    <Content Include="AdminMaterial.aspx" />
+    <Content Include="AdminQuiz.aspx" />
     <Content Include="AdminSettings.aspx" />
     <Content Include="AdminUsers.aspx" />
+    <Content Include="Content\AdminCourse.css" />
+    <Content Include="Content\AdminCreateCourse.css" />
+    <Content Include="Content\AdminCreateMaterial.css" />
+    <Content Include="Content\AdminCreateQuiz.css" />
     <Content Include="Content\AdminDashboard.css" />
     <Content Include="App_Data\CreateDatabaseA.sql" />
     <Content Include="App_Data\databaseA.mdf" />
@@ -145,6 +155,8 @@
     <Content Include="App_Data\InsertDummyData.sql" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\AdminLeaderboard.css" />
+    <Content Include="Content\AdminMaterial.css" />
+    <Content Include="Content\AdminQuiz.css" />
     <Content Include="Content\AdminSettings.css" />
     <Content Include="Content\AdminUsers.css" />
     <Content Include="Content\bootstrap-grid.css" />
@@ -265,6 +277,37 @@
     <Content Include="Bundle.config" />
   </ItemGroup>
   <ItemGroup>
+
+
+    <Compile Include="AdminCourse.aspx.cs">
+      <DependentUpon>AdminCourse.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminCourse.aspx.designer.cs">
+      <DependentUpon>AdminCourse.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AdminCreateCourse.aspx.cs">
+      <DependentUpon>AdminCreateCourse.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminCreateCourse.aspx.designer.cs">
+      <DependentUpon>AdminCreateCourse.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AdminCreateMaterial.aspx.cs">
+      <DependentUpon>AdminCreateMaterial.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminCreateMaterial.aspx.designer.cs">
+      <DependentUpon>AdminCreateMaterial.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AdminCreateQuiz.aspx.cs">
+      <DependentUpon>AdminCreateQuiz.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminCreateQuiz.aspx.designer.cs">
+      <DependentUpon>AdminCreateQuiz.aspx</DependentUpon>
+    </Compile>
+
     <Compile Include="App_Code\DojoData.cs" />
     <Compile Include="App_Code\DojoAi.cs" />
     <Compile Include="App_Code\DojoMaterials.cs" />
@@ -376,6 +419,7 @@
       <DependentUpon>ViewSwitcher.ascx</DependentUpon>
     </Compile>
     <Compile Include="App_Code\DojoDb.cs" />
+
     <Compile Include="AdminDashboard.aspx.cs">
       <DependentUpon>AdminDashboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -389,6 +433,20 @@
     </Compile>
     <Compile Include="AdminLeaderboard.aspx.designer.cs">
       <DependentUpon>AdminLeaderboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AdminMaterial.aspx.cs">
+      <DependentUpon>AdminMaterial.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminMaterial.aspx.designer.cs">
+      <DependentUpon>AdminMaterial.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AdminQuiz.aspx.cs">
+      <DependentUpon>AdminQuiz.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminQuiz.aspx.designer.cs">
+      <DependentUpon>AdminQuiz.aspx</DependentUpon>
     </Compile>
     <Compile Include="AdminSettings.aspx.cs">
       <DependentUpon>AdminSettings.aspx</DependentUpon>
@@ -494,7 +552,7 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

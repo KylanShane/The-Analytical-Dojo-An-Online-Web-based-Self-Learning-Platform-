@@ -1,4 +1,4 @@
-﻿-- =====================================================
+-- =====================================================
 -- The Analytical Dojo - full schema with chapters
 -- LocalDB / SQL Server
 -- =====================================================
@@ -83,6 +83,7 @@ CREATE TABLE course_materials (
         CHECK (material_type IN ('VIDEO', 'PPT'))
 );
 
+-- ---------- 4A. material_slides ----------
 -- Image pages used by slide materials in the in-app lesson viewer.
 CREATE TABLE material_slides (
     material_id INT           NOT NULL,
@@ -198,6 +199,33 @@ CREATE TABLE forum_posts (
     CONSTRAINT FK_forum_course
         FOREIGN KEY (course_id) REFERENCES courses(course_id)
 );
+
+-- Replies are kept separately so every reply clearly belongs to one main
+-- discussion. parent_reply_id supports replies to replies when needed.
+CREATE TABLE forum_replies (
+    reply_id        INT IDENTITY(1,1) PRIMARY KEY,
+    post_id         INT           NOT NULL,
+    user_id         INT           NOT NULL,
+    parent_reply_id INT           NULL,
+    content         NVARCHAR(MAX) NOT NULL,
+    created_at      DATETIME2     NOT NULL DEFAULT SYSDATETIME(),
+    is_deleted      BIT           NOT NULL DEFAULT 0,
+
+    CONSTRAINT FK_forum_reply_post
+        FOREIGN KEY (post_id) REFERENCES forum_posts(post_id),
+
+    CONSTRAINT FK_forum_reply_user
+        FOREIGN KEY (user_id) REFERENCES users(user_id),
+
+    CONSTRAINT FK_forum_reply_parent
+        FOREIGN KEY (parent_reply_id) REFERENCES forum_replies(reply_id),
+
+    CONSTRAINT CK_forum_reply_not_own_parent
+        CHECK (parent_reply_id IS NULL OR parent_reply_id <> reply_id)
+);
+
+CREATE INDEX IX_forum_replies_post_created
+    ON forum_replies (post_id, created_at);
 
 -- Per-student forum notification state. A new post from another learner is
 -- unread until the student opens that course's forum.

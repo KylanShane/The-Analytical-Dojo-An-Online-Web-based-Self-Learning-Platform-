@@ -31,8 +31,7 @@
 
             <nav class="sidebar-menu">
 
-                <a href="AdminDashboard.aspx"
-                   class="sidebar-link active">
+                <a href="AdminDashboard.aspx" class="sidebar-link active">
                     Dashboard
                 </a>
 
@@ -40,25 +39,17 @@
                     Users
                 </a>
 
-                <a href="#" class="sidebar-link">
-                    Courses
-                </a>
+                <div class="sidebar-group">
+                    <a href="AdminCourse.aspx" class="sidebar-link">
+                        Courses
 
-                <a href="#" class="sidebar-link">
-                    Materials
-                </a>
+                    </a>
 
-                <a href="#" class="sidebar-link">
-                    Quizzes
-                </a>
-
-                <a href="#" class="sidebar-link">
-                    Enrollments
-                </a>
-
-                <a href="#" class="sidebar-link">
-                    Analytics
-                </a>
+                    <div class="sidebar-submenu">
+                        <a href="AdminMaterial.aspx" class="sidebar-sublink">Materials</a>
+                        <a href="AdminQuiz.aspx" class="sidebar-sublink">Quizzes</a>
+                    </div>
+                </div>
 
                 <a href="AdminLeaderboard.aspx" class="sidebar-link">
                     Leaderboard
