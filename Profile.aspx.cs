@@ -18,10 +18,31 @@ namespace The_Analytical_Dojo
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            // Google-linked accounts never see or use the password fields.
+            bool google = IsGoogleAccount();
+            PasswordPanel.Visible = !google;
+            GoogleNote.Visible = google;
+            if (google)
+            {
+                IntroText.Text = "You can change your name, username and email.";
+            }
+
             if (!IsPostBack)
             {
                 LoadProfile();
             }
+        }
+
+        private bool IsGoogleAccount()
+        {
+            DataTable t = DojoData.Query(@"
+                SELECT google_sub
+                FROM users
+                WHERE user_id = @userId",
+                DojoData.P("@userId", UserId)
+            );
+
+            return t.Rows.Count > 0 && !(t.Rows[0]["google_sub"] is DBNull);
         }
 
         private void LoadProfile()
@@ -49,9 +70,6 @@ namespace The_Analytical_Dojo
             string username = (Username.Text ?? string.Empty).Trim();
             string fullName = (FullName.Text ?? string.Empty).Trim();
             string email = (Email.Text ?? string.Empty).Trim();
-            string current = CurrentPassword.Text ?? string.Empty;
-            string next = NewPassword.Text ?? string.Empty;
-            string confirm = ConfirmPassword.Text ?? string.Empty;
 
             if (username.Length < 3 || username.Length > 50
                 || !Regex.IsMatch(username, @"^[A-Za-z0-9._-]+$"))
@@ -72,27 +90,6 @@ namespace The_Analytical_Dojo
                 return;
             }
 
-            if (string.IsNullOrEmpty(current))
-            {
-                Show("Enter your current password to save changes.", true);
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(next))
-            {
-                if (next.Length < 8)
-                {
-                    Show("New password must be at least 8 characters.", true);
-                    return;
-                }
-
-                if (next != confirm)
-                {
-                    Show("New password and confirmation do not match.", true);
-                    return;
-                }
-            }
-
             using (SqlConnection connection = DojoDb.GetConnection())
             {
                 connection.Open();
@@ -102,7 +99,7 @@ namespace The_Analytical_Dojo
                     DataTable stored = new DataTable();
 
                     using (SqlCommand cmd = new SqlCommand(@"
-                        SELECT password_hash
+                        SELECT password_hash, google_sub
                         FROM users WITH (UPDLOCK, HOLDLOCK)
                         WHERE user_id = @userId", connection, transaction))
                     {
@@ -118,23 +115,66 @@ namespace The_Analytical_Dojo
                         throw new HttpException(404, "Profile not found.");
                     }
 
-                    string hash = Convert.ToString(stored.Rows[0]["password_hash"]);
-                    bool passwordOk;
+                    // Enforced server-side: hiding the fields alone is not enough.
+                    bool google = !(stored.Rows[0]["google_sub"] is DBNull);
+                    string hash = null;
+                    string newHash = null;
 
-                    try
+                    if (!google)
                     {
-                        passwordOk = BCrypt.Net.BCrypt.Verify(current, hash);
-                    }
-                    catch (BCrypt.Net.SaltParseException)
-                    {
-                        passwordOk = false;
-                    }
+                        string current = CurrentPassword.Text ?? string.Empty;
+                        string next = NewPassword.Text ?? string.Empty;
+                        string confirm = ConfirmPassword.Text ?? string.Empty;
 
-                    if (!passwordOk)
-                    {
-                        transaction.Rollback();
-                        Show("Current password is incorrect.", true);
-                        return;
+                        if (string.IsNullOrEmpty(current))
+                        {
+                            transaction.Rollback();
+                            Show("Enter your current password to save changes.", true);
+                            return;
+                        }
+
+                        if (!string.IsNullOrEmpty(next))
+                        {
+                            if (next.Length < 8)
+                            {
+                                transaction.Rollback();
+                                Show("New password must be at least 8 characters.", true);
+                                return;
+                            }
+
+                            if (next != confirm)
+                            {
+                                transaction.Rollback();
+                                Show("New password and confirmation do not match.", true);
+                                return;
+                            }
+                        }
+
+                        hash = stored.Rows[0]["password_hash"] as string;
+                        bool passwordOk = false;
+
+                        if (!string.IsNullOrEmpty(hash))
+                        {
+                            try
+                            {
+                                passwordOk = BCrypt.Net.BCrypt.Verify(current, hash);
+                            }
+                            catch (BCrypt.Net.SaltParseException)
+                            {
+                                passwordOk = false;
+                            }
+                        }
+
+                        if (!passwordOk)
+                        {
+                            transaction.Rollback();
+                            Show("Current password is incorrect.", true);
+                            return;
+                        }
+
+                        newHash = string.IsNullOrEmpty(next)
+                            ? hash
+                            : BCrypt.Net.BCrypt.HashPassword(next);
                     }
 
                     object taken = DojoData.Scalar(
@@ -157,27 +197,45 @@ namespace The_Analytical_Dojo
                         return;
                     }
 
-                    string newHash = string.IsNullOrEmpty(next)
-                        ? hash
-                        : BCrypt.Net.BCrypt.HashPassword(next);
-
-                    DojoData.Execute(
-                        connection,
-                        transaction,
-                        @"
-                        UPDATE users
-                        SET
-                            username = @username,
-                            full_name = @fullName,
-                            email = @email,
-                            password_hash = @hash
-                        WHERE user_id = @userId",
-                        DojoData.P("@username", username),
-                        DojoData.P("@fullName", fullName),
-                        DojoData.P("@email", email),
-                        DojoData.P("@hash", newHash),
-                        DojoData.P("@userId", UserId)
-                    );
+                    if (google)
+                    {
+                        // Google accounts: password_hash is never touched.
+                        DojoData.Execute(
+                            connection,
+                            transaction,
+                            @"
+                            UPDATE users
+                            SET
+                                username = @username,
+                                full_name = @fullName,
+                                email = @email
+                            WHERE user_id = @userId",
+                            DojoData.P("@username", username),
+                            DojoData.P("@fullName", fullName),
+                            DojoData.P("@email", email),
+                            DojoData.P("@userId", UserId)
+                        );
+                    }
+                    else
+                    {
+                        DojoData.Execute(
+                            connection,
+                            transaction,
+                            @"
+                            UPDATE users
+                            SET
+                                username = @username,
+                                full_name = @fullName,
+                                email = @email,
+                                password_hash = @hash
+                            WHERE user_id = @userId",
+                            DojoData.P("@username", username),
+                            DojoData.P("@fullName", fullName),
+                            DojoData.P("@email", email),
+                            DojoData.P("@hash", newHash),
+                            DojoData.P("@userId", UserId)
+                        );
+                    }
 
                     transaction.Commit();
                 }

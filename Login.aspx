@@ -53,12 +53,39 @@
                     </div>
 
                     <asp:Button ID="btnLogin" runat="server" Text="Log in →" CssClass="btn" OnClick="btnLogin_Click" />
+
+                    <div style="display:flex;align-items:center;gap:12px;margin:18px 0;opacity:.6;font-size:.85rem;">
+                        <span style="flex:1;height:1px;background:currentColor;opacity:.3;"></span>
+                        or
+                        <span style="flex:1;height:1px;background:currentColor;opacity:.3;"></span>
+                    </div>
+
+                    <div id="g_id_onload"
+                         data-client_id="348938239435-rbvohc5nk1m9s0ahv5hjsbfqh4epurrp.apps.googleusercontent.com"
+                         data-callback="onGoogleSignIn"
+                         data-auto_prompt="false"></div>
+                    <div class="g_id_signin"
+                         data-type="standard" data-size="large"
+                         data-theme="outline" data-text="signin_with" data-width="320"></div>
+
+                    <asp:HiddenField ID="hfGoogleToken" runat="server" />
+                    <asp:Button ID="btnGoogle" runat="server" OnClick="btnGoogle_Click"
+                                UseSubmitBehavior="false" CausesValidation="false" style="display:none" />
+
                     <p class="auth-foot">train.your.data</p>
                 </div>
             </section>
         </div>
 
         <button type="button" id="themeBtn" class="theme-toggle" aria-label="Toggle theme">◐</button>
+
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <script>
+            function onGoogleSignIn(response) {
+                document.getElementById('<%= hfGoogleToken.ClientID %>').value = response.credential;
+                __doPostBack('<%= btnGoogle.UniqueID %>', '');
+            }
+        </script>
 
         <script>
             (function () {
