@@ -11,6 +11,13 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
     <link href="Content/dojo-theme.css?v=20261022" rel="stylesheet" />
     <script src="Scripts/theme.js"></script>
+    <style>
+        .auth-card a { color: #4f46e5; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+        .auth-card a:visited { color: #4f46e5; }
+        .auth-card a:hover { opacity: .8; }
+        :root[data-theme="dark"] .auth-card a,
+        :root[data-theme="dark"] .auth-card a:visited { color: #f8c030; }
+    </style>
 </head>
 <body class="auth-page">
     <form id="form1" runat="server">
@@ -72,6 +79,9 @@
                     <asp:Button ID="btnGoogle" runat="server" OnClick="btnGoogle_Click"
                                 UseSubmitBehavior="false" CausesValidation="false" style="display:none" />
 
+                    <p class="sub" style="text-align:center;margin-top:18px;">
+                        New here? <a href="Signup.aspx">Create an account</a>
+                    </p>
                     <p class="auth-foot">train.your.data</p>
                 </div>
             </section>
