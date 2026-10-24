@@ -185,6 +185,7 @@
     <Content Include="Content\img\LightModeLogo.jpg" />
     <Content Include="Content\Site.css" />
     <Content Include="CoursePage.aspx" />
+    <Content Include="Images\logo.png" />
     <Content Include="MaterialContent.ashx" />
     <Content Include="MaterialView.aspx" />
     <Content Include="Leaderboard.aspx" />
@@ -202,7 +203,6 @@
     <Content Include="ReviewQuiz.aspx" />
     <Content Include="Scripts\dojo.js" />
     <Content Include="Scripts\theme.js" />
-    <Content Include="Images\logo.png" />
     <Content Include="Images\Courses\data-analytics-foundations.png" />
     <Content Include="Images\Courses\excel-for-data-analysis.png" />
     <Content Include="Images\Courses\machine-learning-data-analytics.png" />
