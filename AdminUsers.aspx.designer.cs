@@ -78,6 +78,69 @@ namespace The_Analytical_Dojo
         protected global::System.Web.UI.WebControls.Label lblTotalAdmins;
 
         /// <summary>
+        /// txtAdminFullName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtAdminFullName;
+
+        /// <summary>
+        /// txtAdminUsername control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtAdminUsername;
+
+        /// <summary>
+        /// txtAdminEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtAdminEmail;
+
+        /// <summary>
+        /// txtAdminPassword control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtAdminPassword;
+
+        /// <summary>
+        /// txtAdminConfirmPassword control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtAdminConfirmPassword;
+
+        /// <summary>
+        /// btnAddAdmin control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnAddAdmin;
+
+        /// <summary>
+        /// btnClearAdmin control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnClearAdmin;
+
+        /// <summary>
         /// txtSearch control.
         /// </summary>
         /// <remarks>

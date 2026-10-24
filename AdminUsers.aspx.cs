@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Net.Mail;
 using System.Web.UI.WebControls;
 
 namespace The_Analytical_Dojo
@@ -145,10 +146,268 @@ namespace The_Analytical_Dojo
             }
         }
 
+        protected void btnAddAdmin_Click(
+            object sender,
+            EventArgs e)
+        {
+            lblMessage.Visible = false;
+
+            string fullName =
+                txtAdminFullName.Text.Trim();
+
+            string username =
+                txtAdminUsername.Text.Trim();
+
+            string email =
+                txtAdminEmail.Text.Trim();
+
+            string password =
+                txtAdminPassword.Text;
+
+            string confirmPassword =
+                txtAdminConfirmPassword.Text;
+
+            if (string.IsNullOrWhiteSpace(fullName) ||
+                string.IsNullOrWhiteSpace(username) ||
+                string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(password) ||
+                string.IsNullOrWhiteSpace(confirmPassword))
+            {
+                ShowMessage(
+                    "Please complete all admin account fields.",
+                    false
+                );
+
+                return;
+            }
+
+            if (!IsValidEmail(email))
+            {
+                ShowMessage(
+                    "Please enter a valid email address.",
+                    false
+                );
+
+                return;
+            }
+
+            if (password != confirmPassword)
+            {
+                ShowMessage(
+                    "Password and confirm password do not match.",
+                    false
+                );
+
+                return;
+            }
+
+            if (UsernameOrEmailExists(
+                username,
+                email))
+            {
+                ShowMessage(
+                    "The username or email is already registered.",
+                    false
+                );
+
+                return;
+            }
+
+            string passwordHash;
+
+            try
+            {
+                passwordHash =
+                    BCrypt.Net.BCrypt.HashPassword(
+                        password
+                    );
+            }
+            catch
+            {
+                ShowMessage(
+                    "The password could not be processed.",
+                    false
+                );
+
+                return;
+            }
+
+            bool created =
+                CreateAdmin(
+                    username,
+                    fullName,
+                    email,
+                    passwordHash
+                );
+
+            if (created)
+            {
+                ClearAdminForm();
+
+                ShowMessage(
+                    "Admin account created successfully.",
+                    true
+                );
+
+                LoadUserStatistics();
+                LoadUsers();
+            }
+            else
+            {
+                ShowMessage(
+                    "Admin account could not be created.",
+                    false
+                );
+            }
+        }
+
+        protected void btnClearAdmin_Click(
+            object sender,
+            EventArgs e)
+        {
+            ClearAdminForm();
+
+            lblMessage.Visible = false;
+        }
+
+        private bool UsernameOrEmailExists(
+            string username,
+            string email)
+        {
+            using (SqlConnection con =
+                new SqlConnection(connectionString))
+            {
+                string query = @"
+                    SELECT COUNT(*)
+
+                    FROM users
+
+                    WHERE username = @username
+                    OR email = @email";
+
+                SqlCommand cmd =
+                    new SqlCommand(query, con);
+
+                cmd.Parameters.Add(
+                    "@username",
+                    SqlDbType.NVarChar
+                ).Value = username;
+
+                cmd.Parameters.Add(
+                    "@email",
+                    SqlDbType.NVarChar
+                ).Value = email;
+
+                con.Open();
+
+                int count =
+                    Convert.ToInt32(
+                        cmd.ExecuteScalar()
+                    );
+
+                return count > 0;
+            }
+        }
+
+        private bool CreateAdmin(
+            string username,
+            string fullName,
+            string email,
+            string passwordHash)
+        {
+            using (SqlConnection con =
+                new SqlConnection(connectionString))
+            {
+                string query = @"
+                    INSERT INTO users
+                    (
+                        username,
+                        full_name,
+                        email,
+                        password_hash,
+                        role,
+                        peer_leader_since,
+                        created_at
+                    )
+
+                    VALUES
+                    (
+                        @username,
+                        @fullName,
+                        @email,
+                        @passwordHash,
+                        'ADMIN',
+                        NULL,
+                        GETDATE()
+                    )";
+
+                SqlCommand cmd =
+                    new SqlCommand(query, con);
+
+                cmd.Parameters.Add(
+                    "@username",
+                    SqlDbType.NVarChar
+                ).Value = username;
+
+                cmd.Parameters.Add(
+                    "@fullName",
+                    SqlDbType.NVarChar
+                ).Value = fullName;
+
+                cmd.Parameters.Add(
+                    "@email",
+                    SqlDbType.NVarChar
+                ).Value = email;
+
+                cmd.Parameters.Add(
+                    "@passwordHash",
+                    SqlDbType.NVarChar
+                ).Value = passwordHash;
+
+                con.Open();
+
+                int rowsAffected =
+                    cmd.ExecuteNonQuery();
+
+                return rowsAffected > 0;
+            }
+        }
+
+        private bool IsValidEmail(
+            string email)
+        {
+            try
+            {
+                MailAddress address =
+                    new MailAddress(email);
+
+                return address.Address
+                    .Equals(
+                        email,
+                        StringComparison.OrdinalIgnoreCase
+                    );
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void ClearAdminForm()
+        {
+            txtAdminFullName.Text = "";
+            txtAdminUsername.Text = "";
+            txtAdminEmail.Text = "";
+            txtAdminPassword.Text = "";
+            txtAdminConfirmPassword.Text = "";
+        }
+
         protected void btnSearch_Click(
             object sender,
             EventArgs e)
         {
+            lblMessage.Visible = false;
+
             LoadUsers();
         }
 
@@ -159,6 +418,8 @@ namespace The_Analytical_Dojo
             txtSearch.Text = "";
 
             ddlRoleFilter.SelectedIndex = 0;
+
+            lblMessage.Visible = false;
 
             LoadUsers();
         }
@@ -218,10 +479,10 @@ namespace The_Analytical_Dojo
                 SqlCommand cmd =
                     new SqlCommand(query, con);
 
-                cmd.Parameters.AddWithValue(
+                cmd.Parameters.Add(
                     "@userId",
-                    userId
-                );
+                    SqlDbType.Int
+                ).Value = userId;
 
                 con.Open();
 
@@ -296,7 +557,6 @@ namespace The_Analytical_Dojo
             bool success)
         {
             lblMessage.Text = message;
-
             lblMessage.Visible = true;
 
             if (success)
