@@ -67,7 +67,7 @@
                     Leaderboard
                 </a>
 
-                <a href="#" class="sidebar-link">
+                <a href="AdminForum.aspx" class="sidebar-link">
                     Forum Moderation
                 </a>
 

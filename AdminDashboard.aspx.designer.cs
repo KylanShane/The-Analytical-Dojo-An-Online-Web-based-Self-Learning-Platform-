@@ -114,33 +114,6 @@ namespace The_Analytical_Dojo
         protected global::System.Web.UI.WebControls.Label lblAverageCompletion;
 
         /// <summary>
-        /// lblPendingCourseCount control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblPendingCourseCount;
-
-        /// <summary>
-        /// rptPendingCourses control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptPendingCourses;
-
-        /// <summary>
-        /// pnlNoPendingCourses control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNoPendingCourses;
-
-        /// <summary>
         /// lblTotalQuizAttempts control.
         /// </summary>
         /// <remarks>
@@ -175,6 +148,33 @@ namespace The_Analytical_Dojo
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblMostAttemptedQuiz;
+
+        /// <summary>
+        /// lblPendingCourseCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblPendingCourseCount;
+
+        /// <summary>
+        /// rptPendingCourses control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptPendingCourses;
+
+        /// <summary>
+        /// pnlNoPendingCourses control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNoPendingCourses;
 
         /// <summary>
         /// rptRecentActivity control.
