@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.Text.RegularExpressions;
 
 namespace The_Analytical_Dojo
 {
@@ -11,37 +12,52 @@ namespace The_Analytical_Dojo
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
+            if (IsPostBack)
             {
-                if (Session["user_id"] != null)
-                {
-                    LoadAdminProfile();
-                }
-                else
-                {
-                    DisableSettings();
-
-                    ShowMessage(
-                        "Login has not been set up yet. Account settings will become available after the login system is connected.",
-                        false
-                    );
-                }
+                return;
             }
+
+            int userId = GetLoggedInUserId();
+
+            if (userId == 0)
+            {
+                Response.Redirect("Login.aspx");
+                return;
+            }
+
+            LoadAdminProfile(userId);
         }
 
-        private void LoadAdminProfile()
-        {
-            int userId =
-                Convert.ToInt32(
-                    Session["user_id"]
-                );
+        // ------------------------------------------------------------
+        // Who is logged in?
+        // ------------------------------------------------------------
 
+        // Login.aspx.cs stores the user id in Session["UserId"].
+        private int GetLoggedInUserId()
+        {
+            int id;
+
+            if (Session["UserId"] != null &&
+                int.TryParse(Convert.ToString(Session["UserId"]), out id) &&
+                id > 0)
+            {
+                return id;
+            }
+
+            return 0;
+        }
+
+        // ------------------------------------------------------------
+        // Profile
+        // ------------------------------------------------------------
+
+        private void LoadAdminProfile(int userId)
+        {
             using (SqlConnection con =
                 new SqlConnection(connectionString))
             {
                 string query = @"
                     SELECT
-                        user_id,
                         username,
                         full_name,
                         email,
@@ -50,57 +66,69 @@ namespace The_Analytical_Dojo
 
                     FROM users
 
-                    WHERE user_id = @userId
-                    AND role = 'ADMIN'";
+                    WHERE user_id = @userId";
 
                 SqlCommand cmd =
                     new SqlCommand(query, con);
 
-                cmd.Parameters.AddWithValue(
-                    "@userId",
-                    userId
-                );
+                cmd.Parameters.AddWithValue("@userId", userId);
 
                 con.Open();
 
-                SqlDataReader reader =
-                    cmd.ExecuteReader();
-
-                if (reader.Read())
+                using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    txtUsername.Text =
-                        reader["username"].ToString();
+                    if (!reader.Read())
+                    {
+                        DisableSettings();
 
-                    txtFullName.Text =
-                        reader["full_name"].ToString();
+                        ShowMessage(
+                            "Your account could not be found.",
+                            false
+                        );
+
+                        return;
+                    }
+
+                    string role = reader["role"].ToString();
+
+                    if (!role.Equals("ADMIN", StringComparison.OrdinalIgnoreCase))
+                    {
+                        DisableSettings();
+
+                        ShowMessage(
+                            "This page is only available to administrator accounts.",
+                            false
+                        );
+
+                        return;
+                    }
+
+                    string username = reader["username"].ToString();
+
+                    string fullName =
+                        reader["full_name"] == DBNull.Value
+                        ? ""
+                        : reader["full_name"].ToString();
+
+                    txtUsername.Text = username;
+                    txtRole.Text = role;
+                    txtFullName.Text = fullName;
 
                     txtEmail.Text =
-                        reader["email"].ToString();
+                        reader["email"] == DBNull.Value
+                        ? ""
+                        : reader["email"].ToString();
 
-                    txtRole.Text =
-                        reader["role"].ToString();
+                    txtCreatedAt.Text =
+                        reader["created_at"] == DBNull.Value
+                        ? "-"
+                        : Convert.ToDateTime(reader["created_at"]).ToString("dd MMM yyyy");
 
-                    if (reader["created_at"] != DBNull.Value)
-                    {
-                        DateTime createdAt =
-                            Convert.ToDateTime(
-                                reader["created_at"]
-                            );
+                    string nameForInitial =
+                        fullName.Trim().Length > 0 ? fullName.Trim() : username;
 
-                        txtCreatedAt.Text =
-                            createdAt.ToString(
-                                "dd MMM yyyy"
-                            );
-                    }
-                }
-                else
-                {
-                    DisableSettings();
-
-                    ShowMessage(
-                        "Administrator account could not be found.",
-                        false
-                    );
+                    lblInitial.Text =
+                        nameForInitial.Substring(0, 1).ToUpperInvariant();
                 }
             }
         }
@@ -109,35 +137,36 @@ namespace The_Analytical_Dojo
             object sender,
             EventArgs e)
         {
-            if (!Page.IsValid)
+            int userId = GetLoggedInUserId();
+
+            if (userId == 0)
             {
+                Response.Redirect("Login.aspx");
                 return;
             }
 
-            if (Session["user_id"] == null)
-            {
-                ShowMessage(
-                    "You must be logged in before updating account settings.",
-                    false
-                );
+            string fullName = txtFullName.Text.Trim();
+            string email = txtEmail.Text.Trim();
 
+            if (fullName.Length == 0)
+            {
+                ShowMessage("Full name is required.", false);
                 return;
             }
 
-            int userId =
-                Convert.ToInt32(
-                    Session["user_id"]
-                );
+            if (email.Length == 0)
+            {
+                ShowMessage("Email address is required.", false);
+                return;
+            }
 
-            string fullName =
-                txtFullName.Text.Trim();
+            if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            {
+                ShowMessage("Enter a valid email address.", false);
+                return;
+            }
 
-            string email =
-                txtEmail.Text.Trim();
-
-            if (EmailBelongsToAnotherUser(
-                email,
-                userId))
+            if (EmailBelongsToAnotherUser(email, userId))
             {
                 ShowMessage(
                     "That email address is already being used by another account.",
@@ -163,34 +192,20 @@ namespace The_Analytical_Dojo
                 SqlCommand cmd =
                     new SqlCommand(query, con);
 
-                cmd.Parameters.AddWithValue(
-                    "@fullName",
-                    fullName
-                );
-
-                cmd.Parameters.AddWithValue(
-                    "@email",
-                    email
-                );
-
-                cmd.Parameters.AddWithValue(
-                    "@userId",
-                    userId
-                );
+                cmd.Parameters.AddWithValue("@fullName", fullName);
+                cmd.Parameters.AddWithValue("@email", email);
+                cmd.Parameters.AddWithValue("@userId", userId);
 
                 con.Open();
 
-                int rowsAffected =
-                    cmd.ExecuteNonQuery();
-
-                if (rowsAffected > 0)
+                if (cmd.ExecuteNonQuery() > 0)
                 {
+                    LoadAdminProfile(userId);
+
                     ShowMessage(
                         "Account information updated successfully.",
                         true
                     );
-
-                    LoadAdminProfile();
                 }
                 else
                 {
@@ -220,24 +235,12 @@ namespace The_Analytical_Dojo
                 SqlCommand cmd =
                     new SqlCommand(query, con);
 
-                cmd.Parameters.AddWithValue(
-                    "@email",
-                    email
-                );
-
-                cmd.Parameters.AddWithValue(
-                    "@userId",
-                    currentUserId
-                );
+                cmd.Parameters.AddWithValue("@email", email);
+                cmd.Parameters.AddWithValue("@userId", currentUserId);
 
                 con.Open();
 
-                int count =
-                    Convert.ToInt32(
-                        cmd.ExecuteScalar()
-                    );
-
-                return count > 0;
+                return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
             }
         }
 
@@ -255,22 +258,13 @@ namespace The_Analytical_Dojo
             string message,
             bool success)
         {
-            lblMessage.Text =
-                message;
+            lblMessage.Text = message;
 
-            lblMessage.Visible =
-                true;
+            lblMessage.Visible = true;
 
-            if (success)
-            {
-                lblMessage.CssClass =
-                    "feedback-message success-message";
-            }
-            else
-            {
-                lblMessage.CssClass =
-                    "feedback-message error-message";
-            }
+            lblMessage.CssClass = success
+                ? "feedback-message success-message"
+                : "feedback-message error-message";
         }
     }
 }

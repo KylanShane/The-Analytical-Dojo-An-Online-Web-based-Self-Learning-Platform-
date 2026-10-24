@@ -33,6 +33,15 @@ namespace The_Analytical_Dojo
         protected global::System.Web.UI.WebControls.Image imgLogo;
 
         /// <summary>
+        /// btnLogout control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnLogout;
+
+        /// <summary>
         /// lblMessage control.
         /// </summary>
         /// <remarks>
@@ -183,6 +192,7 @@ namespace The_Analytical_Dojo
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
+
         protected global::System.Web.UI.WebControls.Repeater rptRecentActivity;
 
         /// <summary>

@@ -85,6 +85,16 @@
 
             </nav>
 
+            <asp:LinkButton
+                ID="btnLogout"
+                runat="server"
+                CssClass="logout-link"
+                CausesValidation="false"
+                OnClick="btnLogout_Click"
+                OnClientClick="return confirm('Log out of the admin portal?');">
+                <span>Logout</span>
+            </asp:LinkButton>
+
             <div class="sidebar-footer">
 
                 <span>

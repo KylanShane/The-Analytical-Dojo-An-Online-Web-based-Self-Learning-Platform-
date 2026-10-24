@@ -945,4 +945,36 @@ body {
     .activity-time {
         padding-left: 0;
     }
+
+    /* Logout (sidebar footer) */
+    .sidebar a.logout-link,
+    .sidebar a.logout-link:visited {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0 -10px 14px;
+        padding: 12px 14px;
+        border: none;
+        border-radius: 12px;
+        background: transparent;
+        color: #FF7A66;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease;
+    }
+
+        .sidebar a.logout-link:hover {
+            background: rgba(255, 122, 102, 0.12);
+            color: #FF9482;
+            text-decoration: none;
+        }
+
+        .sidebar a.logout-link span {
+            display: inline;
+            color: inherit;
+            font-size: 13px;
+            font-weight: 600;
+        }
 }

@@ -555,6 +555,14 @@ namespace The_Analytical_Dojo
             }
         }
 
+        protected void btnLogout_Click(object sender, EventArgs e)
+        {
+            Session.Clear();
+            Session.Abandon();
+
+            Response.Redirect("Login.aspx");
+        }
+
         private void ShowMessage(
             string message,
             bool success)
